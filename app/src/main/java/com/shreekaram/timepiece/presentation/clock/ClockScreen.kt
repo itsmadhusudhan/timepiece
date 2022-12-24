@@ -1,6 +1,9 @@
 package com.shreekaram.timepiece.presentation
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
@@ -20,24 +23,45 @@ val formatter= SimpleDateFormat("hh:mm a, E, M/yy", Locale("en"))
 
 @Composable
 fun ClockScreen(navController: NavHostController){
+	val scroll: ScrollState = rememberScrollState(0)
+
 	Scaffold (
 		topBar = { TopBar(title = "", navController= navController) }
 	) {
-		Column(
-			modifier = Modifier
-				.wrapContentSize()
-				.padding(horizontal = 16.dp, vertical = it.calculateBottomPadding())
-		) {
-			Text(
-				text = "World Clock",
-				style = MaterialTheme.typography.h3
-			)
-			Spacer(Modifier.size(8.dp))
-			Today()
+
+		Box(modifier = Modifier
+			.wrapContentSize()
+			.padding(horizontal = 16.dp, vertical = it.calculateBottomPadding())
+		){
+
 			ClockCanvas()
+			Column(
+				modifier = Modifier
+						.wrapContentSize()
+						.verticalScroll(scroll)
+			) {
+				Text(
+					text = "World Clock",
+					style = MaterialTheme.typography.h3
+				)
+				Spacer(Modifier.size(8.dp))
+				Today()
+			}
 		}
 	}
 }
+
+//@Composable
+//private fun Header(scroll: ScrollState, headerHeightPx: Float) {
+//
+//	Box(modifier = Modifier
+//		.fillMaxWidth()
+//		.height(headerHeight)
+//		.graphicsLayer {
+//			translationY = -scroll.value.toFloat() / 2f // Parallax effect
+//		}
+//	)
+//}
 
 
 @Composable

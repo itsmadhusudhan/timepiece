@@ -45,7 +45,7 @@ fun MessageCard(msg: Message) {
             .padding(all=8.dp)
     ) {
         Image(
-            painter = painterResource(id = R.drawable.madhusudhan),
+            painter = painterResource(id = R.drawable.clock_watch_icon),
             contentDescription =null,
             modifier = Modifier
                 .size(40.dp)
