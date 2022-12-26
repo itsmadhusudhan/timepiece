@@ -11,12 +11,16 @@ import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun SettingsScreen(navController: NavHostController){
+	val borderColor= MaterialTheme.colors.onSurface.copy(alpha = 0.5F);
+
 	Scaffold(
 		topBar = {
 			TopAppBar(
@@ -30,7 +34,16 @@ fun SettingsScreen(navController: NavHostController){
 					}) {
 						Icon(Icons.Filled.ArrowBack,"Back")
 					}
-				}
+				},
+				modifier = Modifier
+					.drawBehind {
+						drawLine(
+							borderColor,
+							Offset(0F, size.height),
+							Offset(size.width, size.height),
+							1F
+						)
+					}
 			)
 
 		}

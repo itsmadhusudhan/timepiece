@@ -43,8 +43,6 @@ fun TimePieceTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composa
 
     val view = LocalView.current
     if (!view.isInEditMode) {
-        Log.i("STATUS", "TimePieceTheme: ${colors.background}")
-
         SideEffect {
             val window = (view.context as Activity).window
             window.statusBarColor = colors.background.toArgb()

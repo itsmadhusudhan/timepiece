@@ -49,7 +49,6 @@ fun ClockCanvas() {
 //	seconds angle moves 6 deg
 	val secondsAngle=seconds*6F
 
-
 	val clockFacePaint=Paint().apply{
 		this.color=Gray
 		style = PaintingStyle.Stroke
