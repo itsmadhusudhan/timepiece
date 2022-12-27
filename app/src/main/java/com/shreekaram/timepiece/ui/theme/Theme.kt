@@ -1,7 +1,6 @@
 package com.shreekaram.timepiece.ui.theme
 
 import android.app.Activity
-import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.darkColors
@@ -13,15 +12,22 @@ import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 
 private val DarkColorPalette = darkColors(
-    primary = Purple200,
-    primaryVariant = Purple700,
-    secondary = Teal200
+//    primary = Purple200,
+//    primaryVariant = Purple700,
+//    secondary = Teal200
+    primary = Indigo500,
+    primaryVariant = Indigo700,
+    secondary = Teal200,
+    onPrimary = White
 )
 
 private val LightColorPalette = lightColors(
-    primary = Purple500,
-    primaryVariant = Purple700,
-    secondary = Teal200
+//    primary = Purple500,
+//    primaryVariant = Purple700,
+//    secondary = Teal200
+    primary = Indigo500,
+    primaryVariant = Indigo700,
+    secondary = Teal200,
 
     /* Other default colors to override
     background = Color.White,

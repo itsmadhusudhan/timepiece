@@ -1,27 +1,19 @@
 package com.shreekaram.timepiece.presentation
 
-import android.content.Context
-import android.widget.Toast
-import androidx.annotation.RawRes
-import androidx.compose.animation.*
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.google.gson.Gson
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
 import java.util.*
@@ -30,16 +22,12 @@ import com.shreekaram.timepiece.presentation.home.Route
 
 val formatter= SimpleDateFormat("hh:mm a, E, M/yy", Locale("en"))
 
-//val objectArrayString: String = context.resources.openRawResource(R.raw.my_object).bufferedReader().use { it.readText() }
-//val objectArray = Gson().fromJson(objectArrayString, MyObject::class.java)
-
-inline fun <reified T> Context.jsonToClass(@RawRes resourceId: Int): T =
-	Gson().fromJson(resources.openRawResource(resourceId).bufferedReader().use { it.readText() }, T::class.java)
+//inline fun <reified T> Context.jsonToClass(@RawRes resourceId: Int): T =
+//	Gson().fromJson(resources.openRawResource(resourceId).bufferedReader().use { it.readText() }, T::class.java)
 
 @Composable
 fun ClockScreen(navController: NavHostController){
 	val scroll: ScrollState = rememberScrollState(0)
-	val ctx = LocalContext.current
 
 	Scaffold (
 		topBar = { TopBar(title = "", navController= navController) },
