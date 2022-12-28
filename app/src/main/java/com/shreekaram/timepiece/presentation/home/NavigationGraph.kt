@@ -1,7 +1,5 @@
 package com.shreekaram.timepiece.presentation.home
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.animation.*
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.size
@@ -9,7 +7,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
@@ -23,6 +20,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import com.shreekaram.timepiece.presentation.settings.SettingsScreen
 import androidx.navigation.navigation
 import com.shreekaram.timepiece.presentation.clock.TimezoneListScreen
+import com.shreekaram.timepiece.presentation.clock.TimezoneSearchScreen
 
 
 sealed class Route(var title:String,var id:String){
@@ -34,6 +32,7 @@ sealed class Route(var title:String,var id:String){
 	object StopWatch: Route(title="Stopwatch", id="stopwatch")
 	object Settings: Route(title="Settings", id="settings")
 	object TimezoneList: Route(title="TimezoneList", id="timezonelist")
+	object TimezoneSearch: Route(title="TimezoneSearch", id="timezonesearch")
 }
 
 sealed class BottomNavItem(var title:String, var icon: ImageVector, var route:String,var selectedIcon: ImageVector){
@@ -68,7 +67,7 @@ sealed class BottomNavItem(var title:String, var icon: ImageVector, var route:St
 
 @Composable
 fun BottomNavigationBar(controller:NavHostController){
-	val borderColor= MaterialTheme.colors.onSurface.copy(alpha = 0.5F);
+	val borderColor= MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
 
 	BottomNavigation(
 		backgroundColor= MaterialTheme.colors.background,
@@ -124,7 +123,7 @@ fun BottomNavigationBar(controller:NavHostController){
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun EnterAnimation(content: @Composable () AnimatedVisibilityScope.() -> Unit) {
-	var visible = remember {
+	val visible = remember {
 		MutableTransitionState(false).apply { targetState= true }
 	}
 
@@ -133,12 +132,11 @@ fun EnterAnimation(content: @Composable () AnimatedVisibilityScope.() -> Unit) {
 		enter = slideInHorizontally (
 			initialOffsetX = { 300 }
 		) + fadeIn(initialAlpha = 0.3f),
-		exit = slideOutHorizontally(targetOffsetX = {0}) + shrinkHorizontally(shrinkTowards = Alignment.Start) + fadeOut(),
+		exit = slideOutHorizontally(targetOffsetX = {0}) + fadeOut(),
 		content = content,
 	)
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun RootNavigationGraph(navController:NavHostController){
 
@@ -161,6 +159,12 @@ fun RootNavigationGraph(navController:NavHostController){
 		composable(Route.TimezoneList.id){
 			EnterAnimation {
 				TimezoneListScreen(navController=navController)
+			}
+		}
+
+		composable(Route.TimezoneSearch.id){
+			EnterAnimation {
+				TimezoneSearchScreen(navController=navController)
 			}
 		}
 	}

@@ -8,8 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.Sort
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.rememberCoroutineScope
@@ -27,6 +27,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.shreekaram.timepiece.LocalTimezoneViewModel
 import com.shreekaram.timepiece.presentation.clock.TimeZoneSort
+import com.shreekaram.timepiece.presentation.home.Route
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -137,7 +138,7 @@ fun TimezoneListAppBar(
 	val scope = rememberCoroutineScope()
 
 	TopAppBar(
-		title = { Text("Cities") },
+		title = { Text("Cities", fontSize = 16.sp) },
 		backgroundColor = MaterialTheme.colors.background,
 		contentColor = MaterialTheme.colors.onBackground,
 		elevation = 0.dp,
@@ -158,17 +159,16 @@ fun TimezoneListAppBar(
 		actions = {
 			IconButton(
 				onClick = {
-//					TODO: navigate to search screen
+					navController.navigate(Route.TimezoneSearch.id)
 				}
 			) {
-				Icon(Icons.Filled.Search, "Search Cities")
+				Icon(Icons.Outlined.Search, "Search Cities")
 			}
 			IconButton(
 				onClick = {
 					scope.launch {
 						bottomSheetState.show()
 					}
-
 				}
 			) {
 				Icon(Icons.Filled.Sort, "Sort Cities")
