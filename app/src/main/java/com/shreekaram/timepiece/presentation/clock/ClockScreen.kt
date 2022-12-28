@@ -1,36 +1,41 @@
-package com.shreekaram.timepiece.presentation
+package com.shreekaram.timepiece.presentation.clock
 
-import androidx.compose.foundation.ScrollState
+import android.annotation.SuppressLint
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Language
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.NestedScrollConnection
+import androidx.compose.ui.input.nestedscroll.NestedScrollSource
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import kotlinx.coroutines.delay
-import java.text.SimpleDateFormat
-import java.util.*
-import com.shreekaram.timepiece.presentation.clock.ClockCanvas
+import com.shreekaram.timepiece.LocalUTCTimeViewModel
 import com.shreekaram.timepiece.presentation.home.Route
+import java.time.format.DateTimeFormatter
+import java.util.*
 
-val formatter= SimpleDateFormat("hh:mm a, E, M/yy", Locale("en"))
 
-//inline fun <reified T> Context.jsonToClass(@RawRes resourceId: Int): T =
-//	Gson().fromJson(resources.openRawResource(resourceId).bufferedReader().use { it.readText() }, T::class.java)
+const val maxHeight = 150
+const val minHeight = 60
 
+@SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun ClockScreen(navController: NavHostController){
-	val scroll: ScrollState = rememberScrollState(0)
+fun ClockScreen(navController: NavHostController) {
 
-	Scaffold (
-		topBar = { TopBar(title = "", navController= navController) },
+	Scaffold(
 		floatingActionButton = {
 			FloatingActionButton(
 				modifier = Modifier.padding(bottom = 60.dp),
@@ -44,35 +49,131 @@ fun ClockScreen(navController: NavHostController){
 		},
 		floatingActionButtonPosition = FabPosition.Center,
 		isFloatingActionButtonDocked = true,
-		) {
+	) {
 
-		Column(modifier = Modifier
-			.wrapContentSize()
-			.fillMaxSize()
-			.padding(horizontal = 16.dp, vertical = it.calculateBottomPadding())
-		){
+		val density = LocalDensity.current.density
+		val headerHeightPx = with(LocalDensity.current) {
+			maxHeight.dp.roundToPx().toFloat()
+		}
+		val headerMinHeightPx = with(LocalDensity.current) {
+			minHeight.dp.roundToPx().toFloat()
+		}
+		val headerOffsetHeightPx = remember {
+			mutableStateOf(0F)
+		}
+		val nestedScrollConnection = remember {
+			object : NestedScrollConnection {
+				override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+					val delta = available.y
+					val newOffset = headerOffsetHeightPx.value + delta
 
-			Column(
-				modifier = Modifier
-					.wrapContentSize()
-					.verticalScroll(scroll)
-			) {
-				Text(
-					text = "World Clock",
-					style = MaterialTheme.typography.h3
-				)
-				Spacer(Modifier.size(8.dp))
-				Today()
+					headerOffsetHeightPx.value =
+						newOffset.coerceIn(headerMinHeightPx - headerHeightPx, 0F)
+
+					return Offset.Zero
+				}
 			}
+		}
 
-			ClockCanvas()
+		var progress by remember { mutableStateOf(0F) }
 
+		LaunchedEffect(key1 = headerOffsetHeightPx.value) {
+			progress =
+				((headerHeightPx + headerOffsetHeightPx.value) / headerHeightPx - minHeight / maxHeight) / (1f - minHeight / maxHeight)
+		}
+
+		Column(
+			modifier = Modifier
+				.fillMaxSize()
+				.nestedScroll(nestedScrollConnection)
+				.padding(bottom = it.calculateBottomPadding()+50.dp)
+		) {
+			Header(
+				height = ((headerHeightPx + headerOffsetHeightPx.value) / density).dp,
+				progress = progress,
+				onClick = { navController.navigate(Route.Settings.id) }
+			)
+			ClockListView()
 		}
 
 
+//		Box(
+//			modifier = Modifier
+//				.fillMaxSize()
+//				.nestedScroll(nestedScrollConnection)
+//		) {
+//			ClockListView()
+//
+//			Header(
+//				height = ((headerHeightPx + headerOffsetHeightPx.value) / density).dp,
+//				progress = progress,
+//				onClick = { navController.navigate(Route.Settings.id) }
+//			)
+//		}
 	}
 }
 
+@Composable
+fun Header(height: Dp, progress: Float, onClick: () -> Unit) {
+	val borderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
+
+	Box(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(height)
+			.background(MaterialTheme.colors.surface)
+			.drawBehind {
+				if (progress < 0.75)
+					drawLine(
+						borderColor,
+						Offset(0F, size.height),
+						Offset(size.width, size.height),
+						1F
+					)
+			}
+			.padding(horizontal = 20.dp, vertical = 4.dp)
+	) {
+		Column(
+			modifier = Modifier.align(Alignment.BottomStart)
+		) {
+			Text(
+				text = "World Clock",
+				style = MaterialTheme.typography.h3.copy(
+					fontSize = (28 * progress + 8).sp
+				)
+			)
+			Spacer(Modifier.height(0.dp))
+			Today()
+		}
+		IconButton(
+			onClick = onClick,
+			modifier = Modifier
+				.align(Alignment.TopEnd)
+				.padding(all = 0.dp)
+		) {
+			Icon(Icons.Outlined.Settings, "settings")
+		}
+	}
+}
+
+//@Composable
+//fun TimeZoneView() {
+//	LazyColumn(
+//		modifier = Modifier
+//			.fillMaxWidth()
+//			.padding(horizontal = 20.dp),
+//		contentPadding = PaddingValues(top = maxHeight.dp),
+//		verticalArrangement = Arrangement.spacedBy(24.dp)
+//	) {
+//		item {
+//			ClockCanvas()
+//		}
+//		items(20) {
+////			loop and pass selected native time zones
+//			LocalTimeItem()
+//		}
+//	}
+//}
 
 //@Composable
 //private fun Header(scroll: ScrollState, headerHeightPx: Float) {
@@ -85,41 +186,20 @@ fun ClockScreen(navController: NavHostController){
 //		}
 //	)
 //}
+val fmt: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm:ss a, E, M/yy")
+//val formatter= SimpleDateFormat("hh:mm a, E, M/yy", Locale("en"))
+val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale("en"))
+val dateFormatter = DateTimeFormatter.ofPattern("E, dd/yy", Locale("en"))
 
 
 @Composable
-fun Today(){
-	var currentDate by remember{
-		mutableStateOf(Date())
-	}
-
-	LaunchedEffect(key1 = currentDate ){
-		delay(1000L)
-		currentDate= Date()
-	}
+fun Today() {
+	val currentDate =
+		LocalUTCTimeViewModel.current.utcDate.observeAsState().value!!.plusHours(5).plusMinutes(30)
 
 	Text(
-		text = formatter.format(currentDate),
-		color= Color.Gray,
-		style =  MaterialTheme.typography.caption
-	)
-}
-
-@Composable
-fun TopBar(title:String,navController: NavHostController) {
-	TopAppBar(
-		title = { Text(text = title, fontSize = 18.sp) },
-		backgroundColor = MaterialTheme.colors.background,
-		contentColor = MaterialTheme.colors.onBackground,
-		elevation = 0.dp,
-		actions= {
-			IconButton(
-				onClick = {
-					navController.navigate(Route.Settings.id)
-				}
-			) {
-				Icon(imageVector = Icons.Filled.Settings,"Settings" )
-			}
-		}
+		text = fmt.format(currentDate),
+		color = Color.Gray,
+		style = MaterialTheme.typography.caption
 	)
 }

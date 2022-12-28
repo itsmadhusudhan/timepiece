@@ -6,20 +6,21 @@ import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import java.lang.Math.abs
 import java.lang.reflect.Type
+import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 
 
 data class TimeDuration(val hour: Long, val minutes: Long, val seconds: Long) {
 	companion object Convert {
-//		fun fromMilliseconds(milliseconds: Long): TimeDuration {
-//			val hours = TimeUnit.MILLISECONDS.toHours(milliseconds)
-//			val minutes =
-//				TimeUnit.MILLISECONDS.toMinutes(milliseconds) % TimeUnit.HOURS.toMinutes(1)
-//			val seconds =
-//				TimeUnit.MILLISECONDS.toSeconds(milliseconds) % TimeUnit.MINUTES.toSeconds(1)
-//
-//			return TimeDuration(hours, minutes=abs(minutes), seconds)
-//		}
+		fun fromMilliseconds(milliseconds: Long): TimeDuration {
+			val hours = TimeUnit.MILLISECONDS.toHours(milliseconds)
+			val minutes =
+				TimeUnit.MILLISECONDS.toMinutes(milliseconds) % TimeUnit.HOURS.toMinutes(1)
+			val seconds =
+				TimeUnit.MILLISECONDS.toSeconds(milliseconds) % TimeUnit.MINUTES.toSeconds(1)
+
+			return TimeDuration(hours, minutes=abs(minutes), seconds)
+		}
 
 		fun fromSeconds(seconds: Long): TimeDuration {
 			val hours = TimeUnit.SECONDS.toHours(seconds)
@@ -49,7 +50,20 @@ data class NativeTimezone(
 	val isDst: Boolean,
 	var cityName: String = "",
 	var duration: TimeDuration = TimeDuration(0, 0, 0)
-)
+){
+	companion object{
+		fun fromTimezone(timezone:TimeZone): NativeTimezone {
+		return	NativeTimezone(
+				zoneName = timezone.displayName,
+				gmtOffset=timezone.rawOffset/1000F,
+				abbreviation = "",
+				isDst = timezone.dstSavings==1,
+				cityName=timezone.displayName.split("/").last(),
+				duration = TimeDuration.fromSeconds(timezone.rawOffset/1000L)
+			)
+		}
+	}
+}
 
 
 class NativeTimezoneDeserializer : JsonDeserializer<NativeTimezone> {

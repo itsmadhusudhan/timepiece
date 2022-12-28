@@ -17,7 +17,7 @@ enum class TimeZoneSort(val value: String) {
 }
 
 class TimezoneViewModel(application: Application) : AndroidViewModel(application) {
-	private var _sortType = MutableLiveData<TimeZoneSort>(TimeZoneSort.CITY_NAME)
+	private var _sortType = MutableLiveData(TimeZoneSort.CITY_NAME)
 	private val timezonesLiveData: LiveData<List<NativeTimezone>> by lazy {
 		Log.d("INIT", "values are loading")
 		val liveData = MutableLiveData<List<NativeTimezone>>()
@@ -32,14 +32,6 @@ class TimezoneViewModel(application: Application) : AndroidViewModel(application
 
 	val timezones: LiveData<List<NativeTimezone>>
 		get() = timezonesLiveData
-
-//	init {
-//		println(timezones.value)
-//		Log.d("INIT", "Timezone view")
-//		viewModelScope.launch() {
-//			loadTimezones()
-//		}
-//	}
 
 	fun setSortType(type: TimeZoneSort) {
 		_sortType.value = type

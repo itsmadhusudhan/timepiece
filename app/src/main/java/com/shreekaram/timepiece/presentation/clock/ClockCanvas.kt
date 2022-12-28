@@ -7,39 +7,30 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.*
 import androidx.compose.ui.graphics.Color.Companion.Gray
 import androidx.compose.ui.graphics.drawscope.DrawContext
 import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import java.util.*
+import com.shreekaram.timepiece.LocalUTCTimeViewModel
+import com.shreekaram.timepiece.domain.clock.NativeTimezone
 
 
-@Preview(showBackground = true)
 @Composable
-fun ClockCanvas() {
+fun ClockCanvas(timezone:NativeTimezone) {
 	val radius=300F
 	val color= MaterialTheme.colors.onBackground
 	val offset=Offset(0F,0F)
 
-	var currentDate by remember{
-		mutableStateOf(Date())
-	}
+	val currentDate = LocalUTCTimeViewModel.current.utcDate.observeAsState().value!!
+		.plusHours(timezone.duration.hour).plusMinutes(timezone.duration.minutes)
 
-	LaunchedEffect(key1 = currentDate ){
-		delay(1000L)
-		currentDate= Date()
-	}
-
-	val seconds = currentDate.seconds;
-	val minute = currentDate.minutes;
-	val hour = currentDate.hours % 12;
-
-	val hRad=(Math.PI / 6) * hour + (Math.PI / 360) * minute + (Math.PI / 21600) * seconds
+	val seconds = currentDate.second
+	val minute = currentDate.minute
+	val hour = currentDate.hour % 12
 
 	val baseAngle=30F
 //	hour hand moves 30deg
@@ -50,9 +41,9 @@ fun ClockCanvas() {
 	val secondsAngle=seconds*6F
 
 	val clockFacePaint=Paint().apply{
-		this.color=Gray
+		this.color= Gray.copy(alpha = 0.5F)
 		style = PaintingStyle.Stroke
-		strokeWidth=10F
+		strokeWidth=8F
 		strokeCap=StrokeCap.Round
 	}
 	val clockTickPaint=Paint().apply{
@@ -89,7 +80,7 @@ fun ClockCanvas() {
 
 	Canvas(
 		modifier = Modifier
-			.padding(16.dp)
+			.padding(horizontal =  16.dp, vertical = 8.dp)
 			.height(300.dp)
 			.width(300.dp)
 
@@ -189,9 +180,9 @@ fun drawClockNumbers(drawContext: DrawContext,radius:Float,paint:android.graphic
 
 	for(i in 1..12){
 		val angle=i*30F
-		drawContext.canvas.rotate(angle,offset.x,offset.y);
-		drawContext.canvas.translate(0F, -radius*0.75F);
-		drawContext.canvas.rotate(-angle,offset.x,offset.y);
+		drawContext.canvas.rotate(angle,offset.x,offset.y)
+		drawContext.canvas.translate(0F, -radius*0.75F)
+		drawContext.canvas.rotate(-angle,offset.x,offset.y)
 		drawContext.canvas.nativeCanvas.drawText(
 			i.toString(),
 			if(i>9)-20F else -16F,
@@ -207,9 +198,9 @@ fun drawClockNumbers(drawContext: DrawContext,radius:Float,paint:android.graphic
 				}
 			}
 		)
-		drawContext.canvas.rotate(angle,offset.x,offset.y);
+		drawContext.canvas.rotate(angle,offset.x,offset.y)
 		drawContext.canvas.translate(0F, radius*0.75F)
-		drawContext.canvas.rotate(-angle,offset.x,offset.y);
+		drawContext.canvas.rotate(-angle,offset.x,offset.y)
 	}
 
 	drawContext.canvas.restore()
