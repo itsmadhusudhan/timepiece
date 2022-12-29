@@ -26,13 +26,14 @@ import com.shreekaram.timepiece.LocalClockStateViewModel
 import com.shreekaram.timepiece.LocalTimezoneViewModel
 import com.shreekaram.timepiece.LocalUTCTimeViewModel
 import com.shreekaram.timepiece.domain.clock.*
+import com.shreekaram.timepiece.presentation.clock.composables.ButtonActions
 import com.shreekaram.timepiece.presentation.clock.composables.CustomCheckbox
-import com.shreekaram.timepiece.presentation.clock.composables.TimeZoneTypeSheet
+import com.shreekaram.timepiece.presentation.clock.composables.TimezoneFilterModal
 import com.shreekaram.timepiece.presentation.clock.composables.TimezoneListAppBar
+import com.shreekaram.timepiece.presentation.home.Route
 import kotlinx.coroutines.launch
 import java.time.*
 import java.util.*
-
 
 @OptIn(ExperimentalMaterialApi::class)
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -50,11 +51,15 @@ fun TimezoneListScreen(navController: NavHostController) {
 		}
 	}
 
-	Scaffold(
-		topBar = {
-			TimezoneListAppBar(navController, bottomSheetState)
+	val onClickAction:(action: ButtonActions)->Unit={
+		when(it){
+			ButtonActions.BACK_BUTTON -> { navController.popBackStack() }
+			ButtonActions.SEARCH_BUTTON -> {  navController.navigate(Route.TimezoneSearch.id) }
+			ButtonActions.FILTER_BUTTON -> { scope.launch { bottomSheetState.show() } }
 		}
-	) {
+	}
+
+	Scaffold( topBar = { TimezoneListAppBar(onClickAction) } ) {
 		val viewModel = LocalTimezoneViewModel.current
 		val clockViewModel = LocalClockStateViewModel.current
 		val sortType = viewModel.sortType.observeAsState().value
@@ -68,7 +73,7 @@ fun TimezoneListScreen(navController: NavHostController) {
 		}
 	}
 
-	TimeZoneTypeSheet(bottomSheetState = bottomSheetState)
+	TimezoneFilterModal(bottomSheetState = bottomSheetState)
 }
 
 val SelectedCitiesListView: LazyListScope.(timezones: List<NativeTimezone>, utcDate: OffsetDateTime, onSelected: (NativeTimezone) -> Unit, isSelected: (String) -> Boolean) -> Unit =
