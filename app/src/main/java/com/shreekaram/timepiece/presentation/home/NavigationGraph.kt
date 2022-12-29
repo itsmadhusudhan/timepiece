@@ -1,7 +1,7 @@
 package com.shreekaram.timepiece.presentation.home
 
 import androidx.compose.animation.*
-import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -14,11 +14,11 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.shreekaram.timepiece.presentation.settings.SettingsScreen
-import androidx.navigation.navigation
+import com.google.accompanist.navigation.animation.navigation
+import com.google.accompanist.navigation.animation.AnimatedNavHost
+import com.google.accompanist.navigation.animation.composable
 import com.shreekaram.timepiece.presentation.clock.TimezoneListScreen
 import com.shreekaram.timepiece.presentation.clock.TimezoneSearchScreen
 
@@ -120,52 +120,75 @@ fun BottomNavigationBar(controller:NavHostController){
 	}
 }
 
+//@OptIn(ExperimentalAnimationApi::class)
+//@Composable
+//fun EnterAnimation(content: @Composable () AnimatedVisibilityScope.() -> Unit) {
+//	val visible = remember {
+//		MutableTransitionState(false).apply { targetState= true }
+//	}
+//
+//	AnimatedVisibility(
+//		visibleState = visible,
+//		enter = slideInHorizontally (
+//			initialOffsetX = { 300 }
+//		) + fadeIn(initialAlpha = 0.3f),
+//		exit = slideOutHorizontally(targetOffsetX = {0}) + fadeOut(),
+//		content = content,
+//	)
+//}
+
 @OptIn(ExperimentalAnimationApi::class)
-@Composable
-fun EnterAnimation(content: @Composable () AnimatedVisibilityScope.() -> Unit) {
-	val visible = remember {
-		MutableTransitionState(false).apply { targetState= true }
-	}
-
-	AnimatedVisibility(
-		visibleState = visible,
-		enter = slideInHorizontally (
-			initialOffsetX = { 300 }
-		) + fadeIn(initialAlpha = 0.3f),
-		exit = slideOutHorizontally(targetOffsetX = {0}) + fadeOut(),
-		content = content,
-	)
-}
-
 @Composable
 fun RootNavigationGraph(navController:NavHostController){
 
-	NavHost(startDestination =Route.Home.id, navController= navController) {
+	AnimatedNavHost(startDestination =Route.Home.id, navController= navController) {
 		composable(Route.Home.id){
 			HomeScreen(navController= navController)
 		}
 
 		navigation(
 			startDestination=Route.Settings.id,
-			route = Route.Root.id
+			route = Route.Root.id,
 		){
-			composable(Route.Settings.id){
-				EnterAnimation {
-					SettingsScreen(navController=navController)
+			composable(
+				Route.Settings.id,
+				enterTransition = {
+					slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(400))
+				},
+				popExitTransition = {
+					slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(400))
 				}
+			){
+					SettingsScreen(navController=navController)
 			}
 		}
 
-		composable(Route.TimezoneList.id){
-			EnterAnimation {
+		composable(
+			Route.TimezoneList.id,
+			enterTransition = {
+				when(initialState.destination.route){
+					Route.TimezoneSearch.id -> null
+					else -> slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(400))
+				}
+			},
+			popExitTransition = {
+				slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(400))
+			}
+		){
 				TimezoneListScreen(navController=navController)
-			}
 		}
 
-		composable(Route.TimezoneSearch.id){
-			EnterAnimation {
-				TimezoneSearchScreen(navController=navController)
+
+		composable(
+			Route.TimezoneSearch.id,
+			enterTransition = {
+				slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(400))
+			},
+			popExitTransition = {
+				slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(400))
 			}
+		){
+			TimezoneSearchScreen(navController=navController)
 		}
 	}
 }

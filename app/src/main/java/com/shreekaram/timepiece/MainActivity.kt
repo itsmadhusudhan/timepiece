@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
+import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
@@ -11,7 +12,7 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
-import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.navigation.animation.rememberAnimatedNavController
 import com.shreekaram.timepiece.presentation.clock.ClockStateViewModel
 import com.shreekaram.timepiece.presentation.clock.TimezoneViewModel
 import com.shreekaram.timepiece.presentation.clock.UTCTimeModelView
@@ -34,12 +35,13 @@ class MainActivity : ComponentActivity() {
 	private val utcViewModel: UTCTimeModelView by viewModels()
 	private val clockStateViewModel: ClockStateViewModel by viewModels()
 
+	@OptIn(ExperimentalAnimationApi::class)
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		installSplashScreen()
 
 		setContent {
-			val navController = rememberNavController()
+			val navController = rememberAnimatedNavController()
 
 			TimePieceTheme {
 				Surface(
