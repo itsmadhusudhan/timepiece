@@ -8,9 +8,18 @@ import java.lang.Math.abs
 import java.lang.reflect.Type
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
+import kotlin.math.absoluteValue
 
 
 data class TimeDuration(val hour: Long, val minutes: Long, val seconds: Long) {
+	val zoneText:String
+		get() {
+			val minutesText = "${this.minutes.absoluteValue}".padStart(2, '0')
+			val hourText = "${this.hour.absoluteValue}".padStart(2, '0')
+
+			return "$hourText:$minutesText"
+		}
+
 	companion object Convert {
 		fun fromMilliseconds(milliseconds: Long): TimeDuration {
 			val hours = TimeUnit.MILLISECONDS.toHours(milliseconds)
@@ -34,10 +43,24 @@ data class TimeDuration(val hour: Long, val minutes: Long, val seconds: Long) {
 	}
 }
 
-fun TimeDuration.toZone(): String {
-	val minutesText = "${this.minutes}".padStart(2, '0')
+fun TimeDuration.toGmtZone(): String {
+	var prefix=if(this.hour>=0) "+" else "-"
 
-	return "${this.hour}:$minutesText"
+	if( this.hour==0L && this.minutes<0 ){
+		prefix="-"
+	}
+
+	return "${prefix} ${this.zoneText}"
+}
+
+fun TimeDuration.toZone(): String {
+	var prefix=if(this.hour>=0) "+" else "-"
+
+	if( this.hour==0L && this.minutes<0 ){
+		prefix="-"
+	}
+
+	return "${prefix}${this.zoneText}"
 }
 
 data class NativeTimezone(

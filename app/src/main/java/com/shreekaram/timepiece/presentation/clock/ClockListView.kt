@@ -19,7 +19,9 @@ import com.shreekaram.timepiece.domain.clock.NativeTimezone
 @Composable
 fun ClockListView() {
 	val timezones = LocalClockStateViewModel.current.timezones.observeAsState().value!!.toList()
-	val currentTimezone = LocalClockStateViewModel.current.currentTimezone.observeAsState().value!!
+	val clockStateModel = LocalClockStateViewModel.current
+	val currentTimezone = clockStateModel.currentTimezone.observeAsState().value!!
+	val homeTimezone = clockStateModel.homeTimezone.observeAsState().value!!
 
 	LazyColumn(
 		modifier = Modifier
@@ -33,6 +35,11 @@ fun ClockListView() {
 	) {
 		item {
 			ClockCanvas(currentTimezone)
+		}
+		if(homeTimezone.zoneName!=currentTimezone.zoneName) {
+			item {
+				LocalTimeItem(homeTimezone.copy(cityName = "Home"))
+			}
 		}
 		items(timezones.size) { index ->
 			val timezone = timezones[index]

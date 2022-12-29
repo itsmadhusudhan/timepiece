@@ -26,7 +26,7 @@ fun HomeScreen(navController:NavHostController){
 			startDestination= Route.Worldclock.id,
 			navController = homeNavController
 		){
-			composable(Route.Worldclock.id){
+			composable(Route.Worldclock.id, ){
 				ClockScreen(navController=navController)
 			}
 

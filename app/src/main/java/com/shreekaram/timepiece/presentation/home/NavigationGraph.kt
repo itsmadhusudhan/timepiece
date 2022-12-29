@@ -13,34 +13,44 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
-import com.shreekaram.timepiece.presentation.settings.SettingsScreen
-import com.google.accompanist.navigation.animation.navigation
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.animation.navigation
 import com.shreekaram.timepiece.presentation.clock.TimezoneListScreen
 import com.shreekaram.timepiece.presentation.clock.TimezoneSearchScreen
+import com.shreekaram.timepiece.presentation.settings.HomeTimezoneListScreen
+import com.shreekaram.timepiece.presentation.settings.HomeTimezoneSearchScreen
+import com.shreekaram.timepiece.presentation.settings.SettingsScreen
 
 
-sealed class Route(var title:String,var id:String){
-	object Root: Route(title="Root", id="root")
-	object Home: Route(title="Home", id="home")
-	object Worldclock: Route(title="World clock", id="worldclock")
-	object Alarm: Route(title="Alarm", id="alarm")
-	object Timer: Route(title="Timer", id="timer")
-	object StopWatch: Route(title="Stopwatch", id="stopwatch")
-	object Settings: Route(title="Settings", id="settings")
-	object TimezoneList: Route(title="TimezoneList", id="timezonelist")
-	object TimezoneSearch: Route(title="TimezoneSearch", id="timezonesearch")
+sealed class Route(var title: String, var id: String) {
+	object Root : Route(title = "Root", id = "root")
+	object Home : Route(title = "Home", id = "home")
+	object Worldclock : Route(title = "World clock", id = "worldclock")
+	object Alarm : Route(title = "Alarm", id = "alarm")
+	object Timer : Route(title = "Timer", id = "timer")
+	object StopWatch : Route(title = "Stopwatch", id = "stopwatch")
+	object Settings : Route(title = "Settings", id = "settings")
+	object TimezoneList : Route(title = "TimezoneList", id = "timezonelist")
+	object TimezoneSearch : Route(title = "TimezoneSearch", id = "timezonesearch")
+	object HomeTimezoneList : Route(title = "HomeTimezoneList", id = "hometimezonelist")
+	object HomeTimezoneSearch : Route(title = "HomeTimezoneSearch", id = "hometimezonesearch")
 }
 
-sealed class BottomNavItem(var title:String, var icon: ImageVector, var route:String,var selectedIcon: ImageVector){
+sealed class BottomNavItem(
+	var title: String,
+	var icon: ImageVector,
+	var route: String,
+	var selectedIcon: ImageVector
+) {
 	object WorldClock : BottomNavItem(
-		title= Route.Worldclock.title,
-		icon= Icons.Filled.Schedule,
-		route= Route.Worldclock.id,
-		selectedIcon= Icons.Filled.WatchLater
+		title = Route.Worldclock.title,
+		icon = Icons.Filled.Schedule,
+		route = Route.Worldclock.id,
+		selectedIcon = Icons.Filled.WatchLater
 	)
 
 	object Alarm : BottomNavItem(
@@ -66,11 +76,11 @@ sealed class BottomNavItem(var title:String, var icon: ImageVector, var route:St
 }
 
 @Composable
-fun BottomNavigationBar(controller:NavHostController){
-	val borderColor= MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
+fun BottomNavigationBar(controller: NavHostController) {
+	val borderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
 
 	BottomNavigation(
-		backgroundColor= MaterialTheme.colors.background,
+		backgroundColor = MaterialTheme.colors.background,
 		contentColor = MaterialTheme.colors.onBackground,
 		elevation = 0.dp,
 		modifier = Modifier
@@ -94,12 +104,18 @@ fun BottomNavigationBar(controller:NavHostController){
 		val currentRoute = stackEntry?.destination?.route
 
 		items.forEach {
-			val selected=currentRoute==it.route
+			val selected = currentRoute == it.route
 
 			BottomNavigationItem(
 				unselectedContentColor = MaterialTheme.colors.onBackground.copy(alpha = 0.5F),
 				selectedContentColor = MaterialTheme.colors.onBackground,
-				icon = { Icon(imageVector = if(selected) it.selectedIcon else it.icon, contentDescription = it.title, modifier = Modifier.size(20.dp)) },
+				icon = {
+					Icon(
+						imageVector = if (selected) it.selectedIcon else it.icon,
+						contentDescription = it.title,
+						modifier = Modifier.size(20.dp)
+					)
+				},
 				label = { Text(text = it.title, fontSize = 10.sp) },
 				selected = selected,
 				onClick = {
@@ -138,66 +154,93 @@ fun BottomNavigationBar(controller:NavHostController){
 //}
 
 @OptIn(ExperimentalAnimationApi::class)
-@Composable
-fun RootNavigationGraph(navController:NavHostController){
+val onEnterTransition: (AnimatedContentScope<NavBackStackEntry>.() -> EnterTransition?) = {
+	slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(400))
+}
 
-	AnimatedNavHost(startDestination =Route.Home.id, navController= navController) {
+@OptIn(ExperimentalAnimationApi::class)
+val onPopExitTransition: (AnimatedContentScope<NavBackStackEntry>.() -> ExitTransition?) = {
+	slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(400))
+}
+
+@OptIn(ExperimentalAnimationApi::class)
+@Composable
+fun RootNavigationGraph(navController: NavHostController) {
+
+	AnimatedNavHost(startDestination = Route.Home.id, navController = navController) {
 		composable(Route.Home.id,
 			enterTransition = { EnterTransition.None },
 			exitTransition = { ExitTransition.None },
 			popEnterTransition = { EnterTransition.None },
 			popExitTransition = { ExitTransition.None }
-		){
-			HomeScreen(navController= navController)
+		) {
+			HomeScreen(navController = navController)
 		}
 
 		navigation(
-			startDestination=Route.Settings.id,
+			startDestination = Route.Settings.id,
 			route = Route.Root.id,
-		){
+		) {
 			composable(
 				Route.Settings.id,
 				enterTransition = {
-					slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
+					when (initialState.destination.route) {
+						Route.HomeTimezoneList.id, Route.HomeTimezoneSearch.id -> null
+						else -> onEnterTransition()
+					}
 				},
-				popExitTransition = {
-					slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
-				}
-			){
-					SettingsScreen(navController=navController)
+				popExitTransition = onPopExitTransition
+			) {
+				SettingsScreen(navController = navController)
+			}
+
+			composable(
+				Route.HomeTimezoneList.id,
+				enterTransition = {
+					when (initialState.destination.route) {
+						Route.HomeTimezoneSearch.id -> null
+						else -> onEnterTransition()
+					}
+				},
+				popExitTransition = onPopExitTransition
+			) {
+				HomeTimezoneListScreen(navController = navController)
+			}
+
+			composable(
+				Route.HomeTimezoneSearch.id,
+				enterTransition = onEnterTransition,
+				popExitTransition = onPopExitTransition
+			) {
+				HomeTimezoneSearchScreen(navController = navController)
 			}
 		}
 
 		composable(
 			Route.TimezoneList.id,
 			enterTransition = {
-				when(initialState.destination.route){
+				when (initialState.destination.route) {
 					Route.TimezoneSearch.id -> null
-					else -> slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
+					else -> onEnterTransition()
 				}
 			},
 			popExitTransition = {
-				when(initialState.destination.route){
+				when (initialState.destination.route) {
 					Route.Home.id -> null
-					else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+					else -> onPopExitTransition()
 
 				}
 			}
-		){
-				TimezoneListScreen(navController=navController)
+		) {
+			TimezoneListScreen(navController = navController)
 		}
-
 
 		composable(
 			Route.TimezoneSearch.id,
-			enterTransition = {
-				slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(400))
-			},
-			popExitTransition = {
-				slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(400))
-			}
-		){
-			TimezoneSearchScreen(navController=navController)
+			enterTransition = onEnterTransition,
+			popExitTransition = onPopExitTransition
+		) {
+			TimezoneSearchScreen(navController = navController)
 		}
 	}
 }
