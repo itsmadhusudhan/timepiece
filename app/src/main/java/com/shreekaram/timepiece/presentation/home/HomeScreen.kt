@@ -1,6 +1,8 @@
 package com.shreekaram.timepiece.presentation.home
 
 import android.annotation.SuppressLint
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.material.Scaffold
 import androidx.compose.runtime.Composable
@@ -24,7 +26,11 @@ fun HomeScreen(navController:NavHostController){
 	){
 		AnimatedNavHost(
 			startDestination= Route.Worldclock.id,
-			navController = homeNavController
+			navController = homeNavController,
+			enterTransition = { EnterTransition.None},
+			exitTransition = { ExitTransition.None},
+			popExitTransition = { ExitTransition.None},
+			popEnterTransition = { EnterTransition.None}
 		){
 			composable(Route.Worldclock.id, ){
 				ClockScreen(navController=navController)
