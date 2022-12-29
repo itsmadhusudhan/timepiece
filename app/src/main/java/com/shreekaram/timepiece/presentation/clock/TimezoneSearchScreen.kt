@@ -1,12 +1,12 @@
 package com.shreekaram.timepiece.presentation.clock
 
 import android.annotation.SuppressLint
-import android.util.Log
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Clear
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
@@ -30,14 +30,13 @@ fun TimezoneSearchScreen(navController: NavHostController) {
 	}
 
 	val onTextChange:(String)->Unit={
-		Log.d("SEARCHTERM",it)
 		searchTerm.value=it
 	}
 
 	Scaffold(topBar = { SearchTopBar(navController,searchTerm.value,onTextChange)}) {
 
 		val viewModel = LocalTimezoneViewModel.current
-		val timezones = viewModel.timezones.value!!.filter { it.cityName.contains(searchTerm.value,true)  }
+		val timezones = viewModel.timezones.value!!.filter { it.cityName.startsWith(searchTerm.value,true)  }
 		val selectedTimezones= LocalClockStateViewModel.current.timezones.value!!
 
 		when(searchTerm.value.isEmpty()){
@@ -103,7 +102,18 @@ fun SearchTopBar(navController: NavHostController, searchTerm: String, onTextCha
 					unfocusedIndicatorColor = MaterialTheme.colors.background,
 				),
 				modifier = Modifier.focusRequester(focusRequester),
-				textStyle = TextStyle(fontWeight = FontWeight.Normal)
+				textStyle = TextStyle(fontWeight = FontWeight.Normal),
+				trailingIcon = {
+					if(searchTerm.isNotEmpty()) {
+						IconButton(onClick = { onTextChange("") }) {
+							Icon(
+								Icons.Filled.Clear,
+								"Clear search",
+								modifier = Modifier.size(20.dp)
+							)
+						}
+					}
+				},
 			)
 		},
 		backgroundColor = MaterialTheme.colors.background,
@@ -129,7 +139,7 @@ fun SearchTopBar(navController: NavHostController, searchTerm: String, onTextCha
 					navController.popBackStack()
 				}
 			) {
-				Text("Cancel")
+				Text("Cancel", color = MaterialTheme.colors.onBackground)
 			}
 		}
 	)
