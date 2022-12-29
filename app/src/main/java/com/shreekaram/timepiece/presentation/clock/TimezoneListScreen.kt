@@ -43,8 +43,6 @@ fun TimezoneListScreen(navController: NavHostController) {
 		animationSpec = tween(durationMillis = 300, easing = FastOutLinearInEasing)
 	)
 	val scope = rememberCoroutineScope()
-	val viewModel = LocalTimezoneViewModel.current
-	val clockViewModel = LocalClockStateViewModel.current
 
 	BackHandler(enabled = bottomSheetState.isVisible) {
 		scope.launch {
@@ -57,11 +55,14 @@ fun TimezoneListScreen(navController: NavHostController) {
 			TimezoneListAppBar(navController, bottomSheetState)
 		}
 	) {
+		val viewModel = LocalTimezoneViewModel.current
+		val clockViewModel = LocalClockStateViewModel.current
 		val sortType = viewModel.sortType.observeAsState().value
-		val timezones = viewModel.timezones.value!!.filter { !clockViewModel.containsZone(it.zoneName) }
+		val timezones =
+			viewModel.timezones.value!!.filter { !clockViewModel.containsZone(it.zoneName) }
 		val selectedTimezones = LocalClockStateViewModel.current.timezones.value!!
 
-		when(sortType){
+		when (sortType) {
 			TimeZoneSort.TIMEZONE -> TimezoneGroupListView(timezones, selectedTimezones)
 			else -> CityNameGroupListView(timezones, selectedTimezones)
 		}
@@ -70,56 +71,58 @@ fun TimezoneListScreen(navController: NavHostController) {
 	TimeZoneTypeSheet(bottomSheetState = bottomSheetState)
 }
 
-val SelectedCitiesListView: LazyListScope.(timezones: List<NativeTimezone>,utcDate: OffsetDateTime, onSelected: (NativeTimezone)->Unit,isSelected:(String)->Boolean)->Unit = { timezones,utcDate, onSelected,isSelected ->
-	item{
-		Text(
-			"SELECTED CITIES",
-			modifier = Modifier.padding(bottom = 20.dp, start = 20.dp, top = 4.dp),
-			style = MaterialTheme.typography.subtitle2.copy(Color.Gray)
-		)
-	}
+val SelectedCitiesListView: LazyListScope.(timezones: List<NativeTimezone>, utcDate: OffsetDateTime, onSelected: (NativeTimezone) -> Unit, isSelected: (String) -> Boolean) -> Unit =
+	{ timezones, utcDate, onSelected, isSelected ->
+		item {
+			Text(
+				"SELECTED CITIES",
+				modifier = Modifier.padding(bottom = 20.dp, start = 20.dp, top = 4.dp),
+				style = MaterialTheme.typography.subtitle2.copy(Color.Gray)
+			)
+		}
 
-	items(timezones){ timezone ->
-		TimezoneItem(
-			timezone,
-			onSelected = onSelected,
-			isSelected = isSelected(timezone.zoneName),
-			utcDate = utcDate
-		)
-	}
+		items(timezones) { timezone ->
+			TimezoneItem(
+				timezone,
+				onSelected = onSelected,
+				isSelected = isSelected(timezone.zoneName),
+				utcDate = utcDate
+			)
+		}
 
-	item {
-		Text(
-			text= "More Cities",
-			modifier = Modifier.padding(vertical = 20.dp, horizontal = 20.dp),
-			style = TextStyle(fontWeight = FontWeight.Medium)
-		)
+		item {
+			Text(
+				text = "More Cities",
+				modifier = Modifier.padding(vertical = 20.dp, horizontal = 20.dp),
+				style = TextStyle(fontWeight = FontWeight.Medium)
+			)
+		}
 	}
-}
 
 @Composable
 fun CityNameGroupListView(
 	items: List<NativeTimezone>,
 	selectedTimezones: MutableMap<String, NativeTimezone>,
 ) {
-	val viewmodel = LocalClockStateViewModel.current
-	val utcDate= LocalUTCTimeViewModel.current.utcDate.value!!
-	val groupedItems = items.filter { !selectedTimezones.containsKey(it.zoneName) }.groupBy { it.cityName.first() }
+	val clockStateViewModel = LocalClockStateViewModel.current
+	val utcDate = LocalUTCTimeViewModel.current.utcDate.value!!
+	val groupedItems =
+		items.filter { !selectedTimezones.containsKey(it.zoneName) }.groupBy { it.cityName.first() }
 
 	val isSelected: (key: String) -> Boolean = {
-		viewmodel.containsZone(it)
+		clockStateViewModel.containsZone(it)
 	}
 
-	val onSelected: (timezone: NativeTimezone) -> Unit= {
+	val onSelected: (timezone: NativeTimezone) -> Unit = {
 		if (isSelected(it.zoneName)) {
-			viewmodel.removeTimezone(it.zoneName)
+			clockStateViewModel.removeTimezone(it.zoneName)
 		} else {
-			viewmodel.addTimezone(it)
+			clockStateViewModel.addTimezone(it)
 		}
 	}
 
-	LazyColumn( modifier = Modifier.fillMaxSize() ) {
-		if(selectedTimezones.isNotEmpty()) {
+	LazyColumn(modifier = Modifier.fillMaxSize()) {
+		if (selectedTimezones.isNotEmpty()) {
 			SelectedCitiesListView(
 				selectedTimezones.values.toList(),
 				utcDate,
@@ -134,7 +137,7 @@ fun CityNameGroupListView(
 				SectionTitle(title = title)
 			}
 
-			items(group.value.toList()){ timezone ->
+			items(group.value.toList()) { timezone ->
 				TimezoneItem(
 					timezone,
 					isSelected = isSelected(timezone.zoneName),
@@ -153,13 +156,13 @@ fun TimezoneGroupListView(
 ) {
 	val groupedItems = items.sortedBy { it.gmtOffset }.groupBy { it.gmtOffset }
 	val viewmodel = LocalClockStateViewModel.current
-	val utcDate= LocalUTCTimeViewModel.current.utcDate.value!!
+	val utcDate = LocalUTCTimeViewModel.current.utcDate.value!!
 
 	val isSelected: (key: String) -> Boolean = {
 		viewmodel.containsZone(it)
 	}
 
-	val onSelected: (timezone: NativeTimezone) -> Unit= {
+	val onSelected: (timezone: NativeTimezone) -> Unit = {
 		if (isSelected(it.zoneName)) {
 			viewmodel.removeTimezone(it.zoneName)
 		} else {
@@ -167,8 +170,8 @@ fun TimezoneGroupListView(
 		}
 	}
 
-	LazyColumn( modifier = Modifier.fillMaxSize() ) {
-		if(selectedTimezones.isNotEmpty()) {
+	LazyColumn(modifier = Modifier.fillMaxSize()) {
+		if (selectedTimezones.isNotEmpty()) {
 			SelectedCitiesListView(
 				selectedTimezones.values.toList(),
 				utcDate,
@@ -178,21 +181,21 @@ fun TimezoneGroupListView(
 		}
 
 		groupedItems.forEach { group ->
-			item{
+			item {
 				val duration = TimeDuration.fromSeconds(group.key.toLong())
 				val zone = "GMT ${duration.toZone()}"
 
 				SectionTitle(zone)
 			}
 
-			items(group.value.toList()){ timezone ->
+			items(group.value.toList()) { timezone ->
 				val selected = isSelected(timezone.zoneName)
 
 				TimezoneItem(
 					timezone,
 					isSelected = selected,
 					onSelected = onSelected,
-					utcDate= utcDate
+					utcDate = utcDate
 				)
 			}
 		}
