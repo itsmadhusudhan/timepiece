@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.shreekaram.timepiece.LocalClockStateViewModel
 import com.shreekaram.timepiece.LocalUTCTimeViewModel
 import com.shreekaram.timepiece.presentation.home.Route
 import java.time.format.DateTimeFormatter
@@ -30,6 +31,10 @@ import java.util.*
 
 const val maxHeight = 150
 const val minHeight = 60
+
+val fmt: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mma, E, M/dd")
+val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale("en"))
+val dateFormatter = DateTimeFormatter.ofPattern("E, M/dd", Locale("en"))
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
@@ -95,21 +100,6 @@ fun ClockScreen(navController: NavHostController) {
 			)
 			ClockListView()
 		}
-
-
-//		Box(
-//			modifier = Modifier
-//				.fillMaxSize()
-//				.nestedScroll(nestedScrollConnection)
-//		) {
-//			ClockListView()
-//
-//			Header(
-//				height = ((headerHeightPx + headerOffsetHeightPx.value) / density).dp,
-//				progress = progress,
-//				onClick = { navController.navigate(Route.Settings.id) }
-//			)
-//		}
 	}
 }
 
@@ -156,49 +146,17 @@ fun Header(height: Dp, progress: Float, onClick: () -> Unit) {
 	}
 }
 
-//@Composable
-//fun TimeZoneView() {
-//	LazyColumn(
-//		modifier = Modifier
-//			.fillMaxWidth()
-//			.padding(horizontal = 20.dp),
-//		contentPadding = PaddingValues(top = maxHeight.dp),
-//		verticalArrangement = Arrangement.spacedBy(24.dp)
-//	) {
-//		item {
-//			ClockCanvas()
-//		}
-//		items(20) {
-////			loop and pass selected native time zones
-//			LocalTimeItem()
-//		}
-//	}
-//}
-
-//@Composable
-//private fun Header(scroll: ScrollState, headerHeightPx: Float) {
-//
-//	Box(modifier = Modifier
-//		.fillMaxWidth()
-//		.height(headerHeight)
-//		.graphicsLayer {
-//			translationY = -scroll.value.toFloat() / 2f // Parallax effect
-//		}
-//	)
-//}
-val fmt: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mm:ss a, E, M/yy")
-//val formatter= SimpleDateFormat("hh:mm a, E, M/yy", Locale("en"))
-val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale("en"))
-val dateFormatter = DateTimeFormatter.ofPattern("E, dd/yy", Locale("en"))
-
-
 @Composable
 fun Today() {
+	val currentTimezone = LocalClockStateViewModel.current.currentTimezone.observeAsState().value!!
+
 	val currentDate =
-		LocalUTCTimeViewModel.current.utcDate.observeAsState().value!!.plusHours(5).plusMinutes(30)
+		LocalUTCTimeViewModel.current.utcDate.observeAsState().value!!
+			.plusHours(currentTimezone.duration.hour)
+			.plusMinutes(currentTimezone.duration.minutes)
 
 	Text(
-		text = fmt.format(currentDate),
+		text = "${currentTimezone.cityName}, ${fmt.format(currentDate)}",
 		color = Color.Gray,
 		style = MaterialTheme.typography.caption
 	)

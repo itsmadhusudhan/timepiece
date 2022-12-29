@@ -53,12 +53,14 @@ data class NativeTimezone(
 ){
 	companion object{
 		fun fromTimezone(timezone:TimeZone): NativeTimezone {
-		return	NativeTimezone(
-				zoneName = timezone.displayName,
+			val zoneName=timezone.getID()
+
+			return	NativeTimezone(
+				zoneName = zoneName,
 				gmtOffset=timezone.rawOffset/1000F,
 				abbreviation = "",
 				isDst = timezone.dstSavings==1,
-				cityName=timezone.displayName.split("/").last(),
+				cityName= zoneName.split("/").last(),
 				duration = TimeDuration.fromSeconds(timezone.rawOffset/1000L)
 			)
 		}
