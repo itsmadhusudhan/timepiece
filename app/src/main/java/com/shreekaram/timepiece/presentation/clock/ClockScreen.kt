@@ -39,7 +39,6 @@ val dateFormatter = DateTimeFormatter.ofPattern("E, M/dd", Locale("en"))
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ClockScreen(navController: NavHostController) {
-
 	Scaffold(
 		floatingActionButton = {
 			FloatingActionButton(
@@ -80,7 +79,7 @@ fun ClockScreen(navController: NavHostController) {
 			}
 		}
 
-		var progress by remember { mutableStateOf(0F) }
+		var progress by remember { mutableStateOf(1F) }
 
 		LaunchedEffect(key1 = headerOffsetHeightPx.value) {
 			progress =

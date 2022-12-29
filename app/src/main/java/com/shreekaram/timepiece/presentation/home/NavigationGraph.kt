@@ -142,7 +142,12 @@ fun BottomNavigationBar(controller:NavHostController){
 fun RootNavigationGraph(navController:NavHostController){
 
 	AnimatedNavHost(startDestination =Route.Home.id, navController= navController) {
-		composable(Route.Home.id){
+		composable(Route.Home.id,
+			enterTransition = { EnterTransition.None },
+			exitTransition = { ExitTransition.None },
+			popEnterTransition = { EnterTransition.None },
+			popExitTransition = { ExitTransition.None }
+		){
 			HomeScreen(navController= navController)
 		}
 
@@ -153,10 +158,10 @@ fun RootNavigationGraph(navController:NavHostController){
 			composable(
 				Route.Settings.id,
 				enterTransition = {
-					slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(400))
+					slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
 				},
 				popExitTransition = {
-					slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(400))
+					slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
 				}
 			){
 					SettingsScreen(navController=navController)
@@ -168,11 +173,15 @@ fun RootNavigationGraph(navController:NavHostController){
 			enterTransition = {
 				when(initialState.destination.route){
 					Route.TimezoneSearch.id -> null
-					else -> slideIntoContainer(AnimatedContentScope.SlideDirection.Left, animationSpec = tween(400))
+					else -> slideIntoContainer(AnimatedContentScope.SlideDirection.Left)
 				}
 			},
 			popExitTransition = {
-				slideOutOfContainer(AnimatedContentScope.SlideDirection.Right, animationSpec = tween(400))
+				when(initialState.destination.route){
+					Route.Home.id -> null
+					else -> slideOutOfContainer(AnimatedContentScope.SlideDirection.Right)
+
+				}
 			}
 		){
 				TimezoneListScreen(navController=navController)

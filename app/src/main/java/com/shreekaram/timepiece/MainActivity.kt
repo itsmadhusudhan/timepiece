@@ -41,8 +41,6 @@ class MainActivity : ComponentActivity() {
 		installSplashScreen()
 
 		setContent {
-			val navController = rememberAnimatedNavController()
-
 			TimePieceTheme {
 				Surface(
 					modifier = Modifier.fillMaxSize(),
@@ -50,10 +48,12 @@ class MainActivity : ComponentActivity() {
 				) {
 					CompositionLocalProvider(
 						LocalTimezoneViewModel provides viewModel,
-					// FIXME: refactor to localise it
-						LocalUTCTimeViewModel provides  utcViewModel,
-						LocalClockStateViewModel provides  clockStateViewModel,
+						// FIXME: refactor to localise it
+						LocalUTCTimeViewModel provides utcViewModel,
+						LocalClockStateViewModel provides clockStateViewModel,
 					) {
+						val navController = rememberAnimatedNavController()
+
 						RootNavigationGraph(navController = navController)
 					}
 				}
