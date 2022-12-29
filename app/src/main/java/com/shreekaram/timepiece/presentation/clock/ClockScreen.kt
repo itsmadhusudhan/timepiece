@@ -86,7 +86,7 @@ fun ClockScreen(navController: NavHostController) {
 			modifier = Modifier
 				.fillMaxSize()
 				.nestedScroll(nestedScrollConnection)
-				.padding(bottom = it.calculateBottomPadding()+50.dp)
+				.padding(bottom = it.calculateBottomPadding())
 		) {
 			Header(
 				height = ((headerHeightPx + headerOffsetHeightPx.value) / density).dp,

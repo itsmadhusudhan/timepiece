@@ -19,6 +19,7 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.shreekaram.timepiece.LocalClockStateViewModel
 import com.shreekaram.timepiece.LocalTimezoneViewModel
+import com.shreekaram.timepiece.LocalUTCTimeViewModel
 import com.shreekaram.timepiece.domain.clock.NativeTimezone
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
@@ -33,12 +34,9 @@ fun TimezoneSearchScreen(navController: NavHostController) {
 		searchTerm.value=it
 	}
 
-	println(searchTerm)
-
 	Scaffold(topBar = { SearchTopBar(navController,searchTerm.value,onTextChange)}) {
 
 		val viewModel = LocalTimezoneViewModel.current
-//		val clockViewModel = LocalClockStateViewModel.current
 		val timezones = viewModel.timezones.value!!.filter { it.cityName.contains(searchTerm.value,true)  }
 		val selectedTimezones= LocalClockStateViewModel.current.timezones.value!!
 
@@ -56,6 +54,7 @@ fun FlatCityList(
 	selectedTimezones: MutableMap<String, NativeTimezone>,
 ){
 	val clockStateViewModel=LocalClockStateViewModel.current
+	val utcDate= LocalUTCTimeViewModel.current.utcDate.value!!
 
 	LazyColumn(	modifier = Modifier.fillMaxSize()){
 		items(items.size){index->
@@ -65,6 +64,7 @@ fun FlatCityList(
 			TimezoneItem(
 				timezone = timezone,
 				isSelected=isSelected,
+				utcDate = utcDate,
 				onSelected={
 					if(isSelected){
 						clockStateViewModel.removeTimezone(it.zoneName)
@@ -82,7 +82,6 @@ fun FlatCityList(
 @Composable
 fun SearchTopBar(navController: NavHostController, searchTerm: String, onTextChange: (term:String)->Unit,){
 	val borderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
-//	val scope = rememberCoroutineScope()
 
 	val focusRequester= remember {
 		FocusRequester()

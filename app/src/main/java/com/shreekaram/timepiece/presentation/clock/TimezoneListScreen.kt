@@ -70,7 +70,7 @@ fun TimezoneListScreen(navController: NavHostController) {
 	TimeZoneTypeSheet(bottomSheetState = bottomSheetState)
 }
 
-val SelectedCitiesListView: LazyListScope.(List<NativeTimezone>, (NativeTimezone)->Unit, (key:String)->Boolean)->Unit = { timezones,onSelected,isSelected ->
+val SelectedCitiesListView: LazyListScope.(timezones: List<NativeTimezone>,utcDate: OffsetDateTime, onSelected: (NativeTimezone)->Unit,isSelected:(String)->Boolean)->Unit = { timezones,utcDate, onSelected,isSelected ->
 	item{
 		Text(
 			"SELECTED CITIES",
@@ -83,7 +83,8 @@ val SelectedCitiesListView: LazyListScope.(List<NativeTimezone>, (NativeTimezone
 		TimezoneItem(
 			timezone,
 			onSelected = onSelected,
-			isSelected = true
+			isSelected = isSelected(timezone.zoneName),
+			utcDate = utcDate
 		)
 	}
 
@@ -102,6 +103,7 @@ fun CityNameGroupListView(
 	selectedTimezones: MutableMap<String, NativeTimezone>,
 ) {
 	val viewmodel = LocalClockStateViewModel.current
+	val utcDate= LocalUTCTimeViewModel.current.utcDate.value!!
 	val groupedItems = items.filter { !selectedTimezones.containsKey(it.zoneName) }.groupBy { it.cityName.first() }
 
 	val isSelected: (key: String) -> Boolean = {
@@ -120,6 +122,7 @@ fun CityNameGroupListView(
 		if(selectedTimezones.isNotEmpty()) {
 			SelectedCitiesListView(
 				selectedTimezones.values.toList(),
+				utcDate,
 				onSelected,
 				isSelected
 			)
@@ -136,6 +139,7 @@ fun CityNameGroupListView(
 					timezone,
 					isSelected = isSelected(timezone.zoneName),
 					onSelected = onSelected,
+					utcDate = utcDate
 				)
 			}
 		}
@@ -149,6 +153,7 @@ fun TimezoneGroupListView(
 ) {
 	val groupedItems = items.sortedBy { it.gmtOffset }.groupBy { it.gmtOffset }
 	val viewmodel = LocalClockStateViewModel.current
+	val utcDate= LocalUTCTimeViewModel.current.utcDate.value!!
 
 	val isSelected: (key: String) -> Boolean = {
 		viewmodel.containsZone(it)
@@ -166,6 +171,7 @@ fun TimezoneGroupListView(
 		if(selectedTimezones.isNotEmpty()) {
 			SelectedCitiesListView(
 				selectedTimezones.values.toList(),
+				utcDate,
 				onSelected,
 				isSelected
 			)
@@ -186,6 +192,7 @@ fun TimezoneGroupListView(
 					timezone,
 					isSelected = selected,
 					onSelected = onSelected,
+					utcDate= utcDate
 				)
 			}
 		}
@@ -205,11 +212,12 @@ fun SectionTitle(title: String) {
 fun TimezoneItem(
 	timezone: NativeTimezone,
 	isSelected: Boolean = false,
-	onSelected: (timezone: NativeTimezone) -> Unit
+	onSelected: (timezone: NativeTimezone) -> Unit,
+	utcDate: OffsetDateTime
 ) {
-	val currentDate = LocalUTCTimeViewModel.current.utcDate.value!!
-		.plusHours(timezone.duration.hour)
-		.plusMinutes(timezone.duration.minutes)
+	val currentDate = remember {
+		utcDate.plusHours(timezone.duration.hour).plusMinutes(timezone.duration.minutes)
+	}
 
 	val checked = remember(key1 = isSelected) { mutableStateOf(isSelected) }
 
@@ -241,37 +249,3 @@ fun TimezoneItem(
 		}
 	}
 }
-
-
-/**
- *
- * 			.drawWithContent {
-drawContent()
-val firstVisibleElementIndex =
-state.layoutInfo.visibleItemsInfo.firstOrNull()?.index
-
-if (firstVisibleElementIndex != null) {
-
-val scrollableItems =
-state.layoutInfo.totalItemsCount - state.layoutInfo.visibleItemsInfo.size
-val scrollBarHeight = this.size.height / scrollableItems
-var offsetY =
-((this.size.height - scrollBarHeight) * firstVisibleElementIndex) / scrollableItems
-
-drawRect(
-color = bgColor,
-topLeft = Offset(x = this.size.width-10, y = 0F),
-size = Size(12F, 200F),
-alpha = 1f
-)
-
-drawRect(
-color = Color.LightGray,
-topLeft = Offset(x = this.size.width, y = offsetY),
-size = Size(12F, scrollBarHeight),
-alpha = 1f
-)
-}
-},
-
- */
