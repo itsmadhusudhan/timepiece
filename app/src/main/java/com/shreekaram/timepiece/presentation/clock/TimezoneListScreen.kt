@@ -215,7 +215,7 @@ fun TimezoneItem(
 	onSelected: (timezone: NativeTimezone) -> Unit,
 	utcDate: OffsetDateTime
 ) {
-	val currentDate = remember {
+	val currentDate = remember(key1 = utcDate) {
 		utcDate.plusHours(timezone.duration.hour).plusMinutes(timezone.duration.minutes)
 	}
 
