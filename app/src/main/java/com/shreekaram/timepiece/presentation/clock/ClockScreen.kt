@@ -39,6 +39,7 @@ val dateFormatter = DateTimeFormatter.ofPattern("E, M/dd", Locale("en"))
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ClockScreen(navController: NavHostController) {
+	val viewModel= LocalClockStateViewModel.current
 	Scaffold(
 		floatingActionButton = {
 			FloatingActionButton(

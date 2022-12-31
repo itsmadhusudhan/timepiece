@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.shreekaram.timepiece.LocalClockStateViewModel
 import com.shreekaram.timepiece.LocalTimezoneViewModel
 import com.shreekaram.timepiece.presentation.clock.TimeZoneSort
 import kotlinx.coroutines.launch
@@ -42,13 +43,14 @@ fun TimezoneFilterModal(bottomSheetState: ModalBottomSheetState) {
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun BottomSheetContent(bottomSheetState: ModalBottomSheetState) {
-	val viewModel = LocalTimezoneViewModel.current
+	val viewModel = LocalClockStateViewModel.current
 
 	val sortType = viewModel.sortType.observeAsState().value
 	val scope = rememberCoroutineScope()
 
 	val onClick: (option: TimeZoneSort) -> Unit = {
-		viewModel.setSortType(it)
+
+		viewModel.updateSortType(it)
 
 		scope.launch {
 			bottomSheetState.hide()

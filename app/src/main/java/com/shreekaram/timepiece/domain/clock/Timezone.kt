@@ -4,13 +4,15 @@ import com.google.gson.JsonDeserializationContext
 import com.google.gson.JsonDeserializer
 import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
+import com.shreekaram.timepiece.proto.TimezoneModel
+import kotlinx.serialization.Serializable
 import java.lang.Math.abs
 import java.lang.reflect.Type
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
 import kotlin.math.absoluteValue
 
-
+@Serializable
 data class TimeDuration(val hour: Long, val minutes: Long, val seconds: Long) {
 	val zoneText:String
 		get() {
@@ -63,6 +65,7 @@ fun TimeDuration.toZone(): String {
 	return "${prefix}${this.zoneText}"
 }
 
+@Serializable
 data class NativeTimezone(
 	@SerializedName("zone_name")
 	val zoneName: String,
@@ -75,8 +78,10 @@ data class NativeTimezone(
 	var duration: TimeDuration = TimeDuration(0, 0, 0)
 ){
 	companion object{
-		fun fromTimezone(timezone:TimeZone): NativeTimezone {
-			val zoneName=timezone.getID()
+		fun current(): NativeTimezone {
+			val timezone = TimeZone.getDefault()
+
+			val zoneName= timezone.getID()
 
 			return	NativeTimezone(
 				zoneName = zoneName,
@@ -87,7 +92,29 @@ data class NativeTimezone(
 				duration = TimeDuration.fromSeconds(timezone.rawOffset/1000L)
 			)
 		}
+
+		fun fromTimezoneModel(timezone:TimezoneModel): NativeTimezone {
+			val zoneName=timezone.zoneName
+
+			return	NativeTimezone(
+				zoneName = zoneName,
+				gmtOffset=timezone.gmtOffset,
+				abbreviation = timezone.abbreviation,
+				isDst = timezone.isDst,
+				cityName= zoneName.split("/").last(),
+				duration = TimeDuration.fromSeconds(timezone.gmtOffset.toLong())
+			)
+		}
 	}
+}
+
+fun NativeTimezone.toTimezoneModel(): TimezoneModel{
+	return TimezoneModel.newBuilder()
+		.setZoneName(this.zoneName)
+		.setAbbreviation(this.abbreviation)
+		.setIsDst(this.isDst)
+		.setGmtOffset(this.gmtOffset)
+		.build()
 }
 
 

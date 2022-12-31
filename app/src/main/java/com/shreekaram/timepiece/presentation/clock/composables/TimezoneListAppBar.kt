@@ -19,9 +19,8 @@ enum class ButtonActions{
 }
 
 @Composable
-fun TimezoneListAppBar(
-	onClickAction:(action: ButtonActions)->Unit
-) {
+fun TimezoneListAppBar(onClickAction:(action: ButtonActions)->Unit) {
+
 	val borderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
 
 	TopAppBar(

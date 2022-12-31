@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option java_package = "com.shreekaram.timepiece.proto";
+option java_multiple_files = true;
+
+message TimezoneModel {
+  string zone_name = 1;
+  float gmt_offset = 2;
+  string abbreviation = 3;
+  bool is_dst = 4;
+}
+
+
+
+message ClockState {
+//  enum ClockSort {
+//    TYPE_CITY_NAME = 0;
+//    TYPE_TIMEZONE = 1;
+//  }
+
+  repeated TimezoneModel timezones = 1;
+  TimezoneModel homeTimezone = 2;
+//  ClockSort sortType = 3;
+}

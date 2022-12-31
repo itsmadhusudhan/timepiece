@@ -2,27 +2,31 @@ package com.shreekaram.timepiece.presentation.clock
 
 import android.app.Application
 import android.util.Log
-import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.*
 import com.google.gson.GsonBuilder
 import com.google.gson.reflect.TypeToken
 import com.shreekaram.timepiece.domain.clock.NativeTimezone
 import com.shreekaram.timepiece.domain.clock.NativeTimezoneDeserializer
 import com.shreekaram.timepiece.domain.clock.TimeDuration
+import com.shreekaram.timepiece.domain.repository.TimezoneRepository
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 enum class TimeZoneSort(val value: String) {
 	CITY_NAME("Name"),
 	TIMEZONE("Time zone")
 }
 
-class TimezoneViewModel(application: Application) : AndroidViewModel(application) {
+@HiltViewModel
+class TimezoneViewModel @Inject constructor(private val appContext: Application, private val repository: TimezoneRepository) : ViewModel() {
 	private var _sortType = MutableLiveData(TimeZoneSort.CITY_NAME)
 	private val timezonesLiveData: LiveData<List<NativeTimezone>> by lazy {
-		Log.d("INIT", "values are loading")
 		val liveData = MutableLiveData<List<NativeTimezone>>()
 
-		liveData.value = loadTimezones().sortedBy { it.cityName }
+		viewModelScope.launch {
+			liveData.value = loadTimezones().sortedBy { it.cityName }
+		}
 
 		return@lazy liveData
 	}
@@ -33,12 +37,8 @@ class TimezoneViewModel(application: Application) : AndroidViewModel(application
 	val timezones: LiveData<List<NativeTimezone>>
 		get() = timezonesLiveData
 
-	fun setSortType(type: TimeZoneSort) {
-		_sortType.value = type
-	}
-
 	private fun loadTimezones(): List<NativeTimezone> {
-		val inputStream = this.getApplication<Application>().assets.open("timezones.json")
+		val inputStream = appContext.assets.open("timezones.json")
 		val gson = GsonBuilder()
 			.registerTypeAdapter(NativeTimezone::class.java, NativeTimezoneDeserializer())
 			.create()

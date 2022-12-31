@@ -62,7 +62,7 @@ fun TimezoneListScreen(navController: NavHostController) {
 	Scaffold( topBar = { TimezoneListAppBar(onClickAction) } ) {
 		val viewModel = LocalTimezoneViewModel.current
 		val clockViewModel = LocalClockStateViewModel.current
-		val sortType = viewModel.sortType.observeAsState().value
+		val sortType = clockViewModel.sortType.observeAsState().value
 		val timezones =
 			viewModel.timezones.value!!.filter { !clockViewModel.containsZone(it.zoneName) }
 		val selectedTimezones = LocalClockStateViewModel.current.timezones.value!!
