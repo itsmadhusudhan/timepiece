@@ -1,6 +1,6 @@
 package com.shreekaram.timepiece.di
 
-import com.shreekaram.timepiece.data.ClockRepositoryImpl
+import com.shreekaram.timepiece.data.repository.ClockRepositoryImpl
 import com.shreekaram.timepiece.domain.repository.ClockRepository
 import dagger.Binds
 import dagger.Module
