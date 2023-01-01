@@ -6,7 +6,7 @@ import com.google.gson.JsonElement
 import com.google.gson.annotations.SerializedName
 import com.shreekaram.timepiece.proto.TimezoneModel
 import kotlinx.serialization.Serializable
-import java.lang.Math.abs
+import kotlin.math.abs
 import java.lang.reflect.Type
 import java.util.TimeZone
 import java.util.concurrent.TimeUnit
@@ -25,22 +25,18 @@ data class TimeDuration(val hour: Long, val minutes: Long, val seconds: Long) {
 	companion object Convert {
 		fun fromMilliseconds(milliseconds: Long): TimeDuration {
 			val hours = TimeUnit.MILLISECONDS.toHours(milliseconds)
-			val minutes =
-				TimeUnit.MILLISECONDS.toMinutes(milliseconds) % TimeUnit.HOURS.toMinutes(1)
-			val seconds =
-				TimeUnit.MILLISECONDS.toSeconds(milliseconds) % TimeUnit.MINUTES.toSeconds(1)
+			val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds) % TimeUnit.HOURS.toMinutes(1)
+			val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds) % TimeUnit.MINUTES.toSeconds(1)
 
-			return TimeDuration(hours, minutes=abs(minutes), seconds)
+			return TimeDuration(hours, minutes= abs(minutes), seconds)
 		}
 
 		fun fromSeconds(seconds: Long): TimeDuration {
 			val hours = TimeUnit.SECONDS.toHours(seconds)
-			val minutes =
-				TimeUnit.SECONDS.toMinutes(seconds) % TimeUnit.HOURS.toMinutes(1)
-			val _seconds =
-				TimeUnit.SECONDS.toSeconds(seconds)
+			val minutes = TimeUnit.SECONDS.toMinutes(seconds) % TimeUnit.HOURS.toMinutes(1)
+			val _seconds = TimeUnit.SECONDS.toSeconds(seconds)
 
-			return TimeDuration(hours, minutes=abs(minutes), seconds=_seconds)
+			return TimeDuration(hours, minutes= abs(minutes), seconds=_seconds)
 		}
 	}
 }
@@ -81,14 +77,14 @@ data class NativeTimezone(
 		fun current(): NativeTimezone {
 			val timezone = TimeZone.getDefault()
 
-			val zoneName= timezone.getID()
+			val zoneName= timezone.id
 
 			return	NativeTimezone(
 				zoneName = zoneName,
 				gmtOffset=timezone.rawOffset/1000F,
 				abbreviation = "",
 				isDst = timezone.dstSavings==1,
-				cityName= zoneName.split("/").last(),
+				cityName= parseCityName(zoneName),
 				duration = TimeDuration.fromSeconds(timezone.rawOffset/1000L)
 			)
 		}
@@ -101,14 +97,18 @@ data class NativeTimezone(
 				gmtOffset=timezone.gmtOffset,
 				abbreviation = timezone.abbreviation,
 				isDst = timezone.isDst,
-				cityName= zoneName.split("/").last(),
+				cityName= parseCityName(zoneName),
 				duration = TimeDuration.fromSeconds(timezone.gmtOffset.toLong())
 			)
 		}
 	}
 }
 
-fun NativeTimezone.toTimezoneModel(): TimezoneModel{
+fun parseCityName(name: String): String{
+	return name.split("/").last().split("_").joinToString(" ")
+}
+
+fun NativeTimezone.toTimezoneModel(): TimezoneModel {
 	return TimezoneModel.newBuilder()
 		.setZoneName(this.zoneName)
 		.setAbbreviation(this.abbreviation)
@@ -135,7 +135,7 @@ class NativeTimezoneDeserializer : JsonDeserializer<NativeTimezone> {
 			zoneName,
 			gmtOffset,
 			abbreviation,
-			isDst=if(dst=="1") true else false
+			isDst= dst== "1"
 		)
 	}
 

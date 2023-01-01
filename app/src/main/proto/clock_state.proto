@@ -10,15 +10,12 @@ message TimezoneModel {
   bool is_dst = 4;
 }
 
-
-
 message ClockState {
-//  enum ClockSort {
-//    TYPE_CITY_NAME = 0;
-//    TYPE_TIMEZONE = 1;
-//  }
+  enum ClockSort {
+    TYPE_CITY_NAME = 0;
+    TYPE_TIMEZONE = 1;
+  }
 
-  repeated TimezoneModel timezones = 1;
-  TimezoneModel homeTimezone = 2;
-//  ClockSort sortType = 3;
+  TimezoneModel homeTimezone = 1;
+  ClockSort sortType = 2;
 }

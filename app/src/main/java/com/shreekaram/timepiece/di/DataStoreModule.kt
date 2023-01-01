@@ -14,7 +14,7 @@ import dagger.hilt.components.SingletonComponent
 import java.util.*
 import javax.inject.Singleton
 
-val clockStatePreferenceFile="clock_state_2.pb"
+const val clockStatePreferenceFile="clock_state.pb"
 
 @Module
 @InstallIn(SingletonComponent::class)
