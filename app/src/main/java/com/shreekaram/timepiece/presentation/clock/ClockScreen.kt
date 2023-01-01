@@ -32,9 +32,9 @@ import java.util.*
 const val maxHeight = 150
 const val minHeight = 60
 
-val fmt: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mma, E, M/dd")
+val fmt: DateTimeFormatter = DateTimeFormatter.ofPattern("hh:mma, E, MM/dd")
 val timeFormatter = DateTimeFormatter.ofPattern("hh:mm a", Locale("en"))
-val dateFormatter = DateTimeFormatter.ofPattern("E, M/dd", Locale("en"))
+val dateFormatter = DateTimeFormatter.ofPattern("E, MM/dd", Locale("en"))
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
