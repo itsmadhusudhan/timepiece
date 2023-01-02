@@ -22,45 +22,44 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
 val LocalTimezoneViewModel = compositionLocalOf<TimezoneViewModel> {
-	error("Timezones are not set")
+    error("Timezones are not set")
 }
 val LocalUTCTimeViewModel = compositionLocalOf<UTCTimeModelView> {
-	error("utc date not set")
+    error("utc date not set")
 }
 val LocalClockStateViewModel = compositionLocalOf<ClockStateViewModel> {
-	error("clock state is not set")
+    error("clock state is not set")
 }
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-	private val utcViewModel: UTCTimeModelView by viewModels()
-	@OptIn(ExperimentalAnimationApi::class)
-	override fun onCreate(savedInstanceState: Bundle?) {
-		super.onCreate(savedInstanceState)
-		installSplashScreen()
+    private val utcViewModel: UTCTimeModelView by viewModels()
+    @OptIn(ExperimentalAnimationApi::class)
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        installSplashScreen()
 
-		setContent {
-			TimePieceTheme {
-				Surface(
-					modifier = Modifier.fillMaxSize(),
-					color = MaterialTheme.colors.background,
-				) {
-					 val timezoneViewModel=hiltViewModel<TimezoneViewModel>()
-					 val clockStateViewModel=hiltViewModel<ClockStateViewModel>()
+        setContent {
+            TimePieceTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colors.background,
+                ) {
+                    val timezoneViewModel = hiltViewModel<TimezoneViewModel>()
+                    val clockStateViewModel = hiltViewModel<ClockStateViewModel>()
 
-					CompositionLocalProvider(
-						LocalTimezoneViewModel provides timezoneViewModel,
-						// FIXME: refactor to localise it
-						LocalUTCTimeViewModel provides utcViewModel,
-						LocalClockStateViewModel provides clockStateViewModel,
-					) {
-						val navController = rememberAnimatedNavController()
+                    CompositionLocalProvider(
+                        LocalTimezoneViewModel provides timezoneViewModel,
+                        // FIXME: refactor to localise it
+                        LocalUTCTimeViewModel provides utcViewModel,
+                        LocalClockStateViewModel provides clockStateViewModel,
+                    ) {
+                        val navController = rememberAnimatedNavController()
 
-						RootNavigationGraph(navController = navController)
-					}
-				}
-			}
-		}
-	}
+                        RootNavigationGraph(navController = navController)
+                    }
+                }
+            }
+        }
+    }
 }
-

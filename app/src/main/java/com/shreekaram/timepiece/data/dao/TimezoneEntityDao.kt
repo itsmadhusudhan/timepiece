@@ -9,14 +9,13 @@ import com.shreekaram.timepiece.data.entities.TimezoneEntity
 
 @Dao
 interface TimezoneEntityDao {
-	@Transaction
-	@Query("SELECT * FROM timezone")
-	fun getAll(): LiveData<List<TimezoneEntity>>
+    @Transaction
+    @Query("SELECT * FROM timezone")
+    fun getAll(): LiveData<List<TimezoneEntity>>
 
-	@Insert
-	suspend fun insert(timezoneEntity: TimezoneEntity)
+    @Insert
+    suspend fun insert(timezoneEntity: TimezoneEntity)
 
-	@Query("DELETE from timezone where zone_name= :zoneName")
-	suspend fun delete(zoneName: String)
+    @Query("DELETE from timezone where zone_name= :zoneName")
+    suspend fun delete(zoneName: String)
 }
-

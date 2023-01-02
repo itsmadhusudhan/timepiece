@@ -14,15 +14,14 @@ import javax.inject.Singleton
 @Module
 class DatabaseModule {
 
-	@Singleton
-	@Provides
-	fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
-		return AppDatabase.getInstance(context)
-	}
+    @Singleton
+    @Provides
+    fun provideAppDatabase(@ApplicationContext context: Context): AppDatabase {
+        return AppDatabase.getInstance(context)
+    }
 
-	@Provides
-	fun provideTimezoneDao(appDatabase: AppDatabase): TimezoneEntityDao {
-		return appDatabase.timezoneDao()
-	}
-
+    @Provides
+    fun provideTimezoneDao(appDatabase: AppDatabase): TimezoneEntityDao {
+        return appDatabase.timezoneDao()
+    }
 }

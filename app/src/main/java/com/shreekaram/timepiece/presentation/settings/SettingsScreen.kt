@@ -22,69 +22,72 @@ import com.shreekaram.timepiece.presentation.home.Route
 
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
-fun SettingsScreen(navController: NavHostController){
-	val borderColor= MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
+fun SettingsScreen(navController: NavHostController) {
+    val borderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
 
-	Scaffold(
-		topBar = {
-			TopAppBar(
-				title = { Text("Settings", fontSize = 16.sp) },
-				backgroundColor = MaterialTheme.colors.background,
-				contentColor = MaterialTheme.colors.onBackground,
-				elevation = 0.dp,
-				navigationIcon = {
-					IconButton(onClick = {
-						navController.popBackStack()
-					}) {
-						Icon(Icons.Filled.ArrowBack,"Back")
-					}
-				},
-				modifier = Modifier
-					.drawBehind {
-						drawLine(
-							borderColor,
-							Offset(0F, size.height),
-							Offset(size.width, size.height),
-							1F
-						)
-					}
-			)
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Settings", fontSize = 16.sp) },
+                backgroundColor = MaterialTheme.colors.background,
+                contentColor = MaterialTheme.colors.onBackground,
+                elevation = 0.dp,
+                navigationIcon = {
+                    IconButton(onClick = {
+                        navController.popBackStack()
+                    }) {
+                        Icon(Icons.Filled.ArrowBack, "Back")
+                    }
+                },
+                modifier = Modifier
+                    .drawBehind {
+                        drawLine(
+                            borderColor,
+                            Offset(0F, size.height),
+                            Offset(size.width, size.height),
+                            1F
+                        )
+                    }
+            )
+        }
+    ) {
+        LazyColumn(modifier = Modifier.padding(vertical = 20.dp)) {
+            item {
+                val homeTimezone = LocalClockStateViewModel.current.homeTimezone.observeAsState().value!!
 
-		}
-	) {
-		LazyColumn(modifier = Modifier.padding(vertical = 20.dp)){
-			item{
-				val homeTimezone= LocalClockStateViewModel.current.homeTimezone.observeAsState().value!!
+                val subtitle = "(GMT ${homeTimezone.duration.toGmtZone()}) ${homeTimezone.cityName}"
 
-				val subtitle="(GMT ${homeTimezone.duration.toGmtZone()}) ${homeTimezone.cityName}"
+                Text(
+                    "TIME ZONE PREFERENCES",
+                    style = MaterialTheme.typography.subtitle2.copy(color = Color.Gray, fontSize = 12.sp),
+                    modifier = Modifier.padding(start = 28.dp)
+                )
 
-				Text(
-					"TIME ZONE PREFERENCES",
-					style = MaterialTheme.typography.subtitle2.copy(color= Color.Gray, fontSize = 12.sp),
-					modifier = Modifier.padding(start = 28.dp)
-				)
+                OptionItem(title = "Home Time Zone", subtitle = subtitle, { navController.navigate(Route.HomeTimezoneList.id) })
 
-				OptionItem(title="Home Time Zone", subtitle = subtitle,{ navController.navigate(Route.HomeTimezoneList.id) })
-
-				Divider(modifier = Modifier.padding(vertical = 12.dp, horizontal = 20.dp))
-			}
-
-		}
-	}
+                Divider(modifier = Modifier.padding(vertical = 12.dp, horizontal = 20.dp))
+            }
+        }
+    }
 }
 
 @Composable
-fun OptionItem(title: String, subtitle: String, onClick:()->Unit){
-	Column(modifier = Modifier
-		.clickable { onClick() }
-		.fillMaxHeight()) {
-		Row(horizontalArrangement = Arrangement.SpaceBetween, modifier = Modifier
-			.fillMaxWidth()
-			.padding(horizontal = 20.dp, vertical = 16.dp)) {
-			Column() {
-				Text(title, style = MaterialTheme.typography.body1)
-				Text(subtitle, style = MaterialTheme.typography.caption.copy(color= Color.Gray))
-			}
-		}
-	}
+fun OptionItem(title: String, subtitle: String, onClick: () -> Unit) {
+    Column(
+        modifier = Modifier
+            .clickable { onClick() }
+            .fillMaxHeight()
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 16.dp)
+        ) {
+            Column() {
+                Text(title, style = MaterialTheme.typography.body1)
+                Text(subtitle, style = MaterialTheme.typography.caption.copy(color = Color.Gray))
+            }
+        }
+    }
 }

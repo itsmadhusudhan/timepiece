@@ -14,19 +14,19 @@ import dagger.hilt.components.SingletonComponent
 import java.util.*
 import javax.inject.Singleton
 
-const val clockStatePreferenceFile="clock_state.pb"
+const val clockStatePreferenceFile = "clock_state.pb"
 
 @Module
 @InstallIn(SingletonComponent::class)
 object DataStoreModule {
-	@Provides
-	@Singleton
-	fun provideClockDataStore(@ApplicationContext appContext: Context): DataStore<ClockState>{
-		return	DataStoreFactory.create(
-			serializer = ClockStateSerializer,
-			produceFile = {
-				appContext.dataStoreFile(clockStatePreferenceFile)
-			},
-		)
-	}
+    @Provides
+    @Singleton
+    fun provideClockDataStore(@ApplicationContext appContext: Context): DataStore<ClockState> {
+        return	DataStoreFactory.create(
+            serializer = ClockStateSerializer,
+            produceFile = {
+                appContext.dataStoreFile(clockStatePreferenceFile)
+            },
+        )
+    }
 }

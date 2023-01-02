@@ -28,7 +28,6 @@ import com.shreekaram.timepiece.presentation.home.Route
 import java.time.format.DateTimeFormatter
 import java.util.*
 
-
 const val maxHeight = 150
 const val minHeight = 60
 
@@ -39,125 +38,127 @@ val dateFormatter = DateTimeFormatter.ofPattern("E, MM/dd", Locale("en"))
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ClockScreen(navController: NavHostController) {
-	val viewModel= LocalClockStateViewModel.current
-	Scaffold(
-		floatingActionButton = {
-			FloatingActionButton(
-				modifier = Modifier.padding(bottom = 60.dp),
-				onClick = {
-					navController.navigate(Route.TimezoneList.id)
-				},
-				backgroundColor = MaterialTheme.colors.primary,
-			) {
-				Icon(Icons.Filled.Language, "Timezones")
-			}
-		},
-		floatingActionButtonPosition = FabPosition.Center,
-		isFloatingActionButtonDocked = true,
-	) {
+    val viewModel = LocalClockStateViewModel.current
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                modifier = Modifier.padding(bottom = 60.dp),
+                onClick = {
+                    navController.navigate(Route.TimezoneList.id)
+                },
+                backgroundColor = MaterialTheme.colors.primary,
+            ) {
+                Icon(Icons.Filled.Language, "Timezones")
+            }
+        },
+        floatingActionButtonPosition = FabPosition.Center,
+        isFloatingActionButtonDocked = true,
+    ) {
 
-		val density = LocalDensity.current.density
-		val headerHeightPx = with(LocalDensity.current) {
-			maxHeight.dp.roundToPx().toFloat()
-		}
-		val headerMinHeightPx = with(LocalDensity.current) {
-			minHeight.dp.roundToPx().toFloat()
-		}
-		val headerOffsetHeightPx = remember {
-			mutableStateOf(0F)
-		}
-		val nestedScrollConnection = remember {
-			object : NestedScrollConnection {
-				override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
-					val delta = available.y
-					val newOffset = headerOffsetHeightPx.value + delta
+        val density = LocalDensity.current.density
+        val headerHeightPx = with(LocalDensity.current) {
+            maxHeight.dp.roundToPx().toFloat()
+        }
+        val headerMinHeightPx = with(LocalDensity.current) {
+            minHeight.dp.roundToPx().toFloat()
+        }
+        val headerOffsetHeightPx = remember {
+            mutableStateOf(0F)
+        }
+        val nestedScrollConnection = remember {
+            object : NestedScrollConnection {
+                override fun onPreScroll(available: Offset, source: NestedScrollSource): Offset {
+                    val delta = available.y
+                    val newOffset = headerOffsetHeightPx.value + delta
 
-					headerOffsetHeightPx.value =
-						newOffset.coerceIn(headerMinHeightPx - headerHeightPx, 0F)
+                    headerOffsetHeightPx.value =
+                        newOffset.coerceIn(headerMinHeightPx - headerHeightPx, 0F)
 
-					return Offset.Zero
-				}
-			}
-		}
+                    return Offset.Zero
+                }
+            }
+        }
 
-		var progress by remember { mutableStateOf(1F) }
+        var progress by remember { mutableStateOf(1F) }
 
-		LaunchedEffect(key1 = headerOffsetHeightPx.value) {
-			progress =
-				((headerHeightPx + headerOffsetHeightPx.value) / headerHeightPx - minHeight / maxHeight) / (1f - minHeight / maxHeight)
-		}
+        LaunchedEffect(key1 = headerOffsetHeightPx.value) {
+            val header = headerHeightPx + headerOffsetHeightPx.value
+            val delta = (1f - minHeight / maxHeight)
+            progress =
+                (header / headerHeightPx - minHeight / maxHeight) / delta
+        }
 
-		Column(
-			modifier = Modifier
-				.fillMaxSize()
-				.nestedScroll(nestedScrollConnection)
-				.padding(bottom = it.calculateBottomPadding())
-		) {
-			Header(
-				height = ((headerHeightPx + headerOffsetHeightPx.value) / density).dp,
-				progress = progress,
-				onClick = { navController.navigate(Route.Settings.id) }
-			)
-			ClockListView()
-		}
-	}
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .nestedScroll(nestedScrollConnection)
+                .padding(bottom = it.calculateBottomPadding())
+        ) {
+            Header(
+                height = ((headerHeightPx + headerOffsetHeightPx.value) / density).dp,
+                progress = progress,
+                onClick = { navController.navigate(Route.Settings.id) }
+            )
+            ClockListView()
+        }
+    }
 }
 
 @Composable
 fun Header(height: Dp, progress: Float, onClick: () -> Unit) {
-	val borderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
+    val borderColor = MaterialTheme.colors.onSurface.copy(alpha = 0.5F)
 
-	Box(
-		modifier = Modifier
-			.fillMaxWidth()
-			.height(height)
-			.background(MaterialTheme.colors.surface)
-			.drawBehind {
-				if (progress < 0.75)
-					drawLine(
-						borderColor,
-						Offset(0F, size.height),
-						Offset(size.width, size.height),
-						1F
-					)
-			}
-			.padding(horizontal = 20.dp, vertical = 4.dp)
-	) {
-		Column(
-			modifier = Modifier.align(Alignment.BottomStart)
-		) {
-			Text(
-				text = "World Clock",
-				style = MaterialTheme.typography.h3.copy(
-					fontSize = (28 * progress + 8).sp
-				)
-			)
-			Spacer(Modifier.height(0.dp))
-			Today()
-		}
-		IconButton(
-			onClick = onClick,
-			modifier = Modifier
-				.align(Alignment.TopEnd)
-				.padding(all = 0.dp)
-		) {
-			Icon(Icons.Outlined.Settings, "settings")
-		}
-	}
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height)
+            .background(MaterialTheme.colors.surface)
+            .drawBehind {
+                if (progress < 0.75)
+                    drawLine(
+                        borderColor,
+                        Offset(0F, size.height),
+                        Offset(size.width, size.height),
+                        1F
+                    )
+            }
+            .padding(horizontal = 20.dp, vertical = 4.dp)
+    ) {
+        Column(
+            modifier = Modifier.align(Alignment.BottomStart)
+        ) {
+            Text(
+                text = "World Clock",
+                style = MaterialTheme.typography.h3.copy(
+                    fontSize = (28 * progress + 8).sp
+                )
+            )
+            Spacer(Modifier.height(0.dp))
+            Today()
+        }
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .padding(all = 0.dp)
+        ) {
+            Icon(Icons.Outlined.Settings, "settings")
+        }
+    }
 }
 
 @Composable
 fun Today() {
-	val currentTimezone = LocalClockStateViewModel.current.currentTimezone.observeAsState().value!!
+    val currentTimezone = LocalClockStateViewModel.current.currentTimezone.observeAsState().value!!
 
-	val currentDate =
-		LocalUTCTimeViewModel.current.utcDate.observeAsState().value!!
-			.plusHours(currentTimezone.duration.hour)
-			.plusMinutes(currentTimezone.duration.minutes)
+    val currentDate =
+        LocalUTCTimeViewModel.current.utcDate.observeAsState().value!!
+            .plusHours(currentTimezone.duration.hour)
+            .plusMinutes(currentTimezone.duration.minutes)
 
-	Text(
-		text = "${currentTimezone.cityName}, ${fmt.format(currentDate)}",
-		color = Color.Gray,
-		style = MaterialTheme.typography.caption
-	)
+    Text(
+        text = "${currentTimezone.cityName}, ${fmt.format(currentDate)}",
+        color = Color.Gray,
+        style = MaterialTheme.typography.caption
+    )
 }

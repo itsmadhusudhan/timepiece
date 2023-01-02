@@ -5,6 +5,7 @@ plugins {
     id 'com.google.dagger.hilt.android'
     id 'org.jetbrains.kotlin.plugin.serialization'
     id 'com.google.protobuf'
+    id 'org.jlleitschuh.gradle.ktlint' version "11.0.0"
 }
 
 android {
@@ -53,6 +54,19 @@ android {
         unitTests.includeAndroidResources = true
     }
 }
+
+ktlint {
+    android = true
+    ignoreFailures = false
+    disabledRules = ["final-newline", "no-wildcard-imports", "max-line-length"]
+    reporters {
+        reporter "plain"
+        reporter "checkstyle"
+        reporter "sarif"
+    }
+}
+
+tasks.getByPath("preBuild").dependsOn("ktlintFormat")
 
 dependencies {
     def activity_version = "1.6.1"

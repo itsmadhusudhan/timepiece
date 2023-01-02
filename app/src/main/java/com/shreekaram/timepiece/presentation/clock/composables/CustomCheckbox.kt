@@ -12,14 +12,14 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun CustomCheckbox(checked: Boolean) {
-	val unCheckedColor = MaterialTheme.colors.onSurface.copy(alpha = 0.4F)
-	val tint = if (checked) MaterialTheme.colors.primary else unCheckedColor
+    val unCheckedColor = MaterialTheme.colors.onSurface.copy(alpha = 0.4F)
+    val tint = if (checked) MaterialTheme.colors.primary else unCheckedColor
 
-	Icon(
-		if (checked) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
-		"",
-		tint = tint,
-		modifier = Modifier
-			.size(20.dp)
-	)
+    Icon(
+        if (checked) Icons.Filled.CheckBox else Icons.Filled.CheckBoxOutlineBlank,
+        "",
+        tint = tint,
+        modifier = Modifier
+            .size(20.dp)
+    )
 }

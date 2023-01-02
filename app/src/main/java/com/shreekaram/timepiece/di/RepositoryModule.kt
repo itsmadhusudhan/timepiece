@@ -12,7 +12,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 abstract class RepositoryModule {
 
-	@Binds
-	@Singleton
-	abstract fun bindClockRepository(repository: ClockRepositoryImpl): ClockRepository
+    @Binds
+    @Singleton
+    abstract fun bindClockRepository(repository: ClockRepositoryImpl): ClockRepository
 }

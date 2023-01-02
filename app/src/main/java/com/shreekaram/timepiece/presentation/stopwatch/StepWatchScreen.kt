@@ -9,10 +9,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 
 @Composable
-fun StopWatchScreen(){
-	Column(modifier = Modifier
-		.fillMaxSize()
-		.wrapContentSize(Alignment.Center)) {
-		Text(text = "Stop Watch Screen")
-	}
+fun StopWatchScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .wrapContentSize(Alignment.Center)
+    ) {
+        Text(text = "Stop Watch Screen")
+    }
 }
