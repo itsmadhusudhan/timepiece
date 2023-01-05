@@ -53,17 +53,25 @@ fun SettingsScreen(navController: NavHostController) {
     ) {
         LazyColumn(modifier = Modifier.padding(vertical = 20.dp)) {
             item {
-                val homeTimezone = LocalClockStateViewModel.current.homeTimezone.observeAsState().value!!
+                val homeTimezone =
+                    LocalClockStateViewModel.current.homeTimezone.observeAsState().value!!
 
                 val subtitle = "(GMT ${homeTimezone.duration.toGmtZone()}) ${homeTimezone.cityName}"
 
                 Text(
                     "TIME ZONE PREFERENCES",
-                    style = MaterialTheme.typography.subtitle2.copy(color = Color.Gray, fontSize = 12.sp),
+                    style = MaterialTheme.typography.subtitle2.copy(
+                        color = Color.Gray,
+                        fontSize = 12.sp
+                    ),
                     modifier = Modifier.padding(start = 28.dp)
                 )
 
-                OptionItem(title = "Home Time Zone", subtitle = subtitle, { navController.navigate(Route.HomeTimezoneList.id) })
+                OptionItem(
+                    title = "Home Time Zone",
+                    subtitle = subtitle,
+                    { navController.navigate(Route.HomeTimezoneList.id) }
+                )
 
                 Divider(modifier = Modifier.padding(vertical = 12.dp, horizontal = 20.dp))
             }

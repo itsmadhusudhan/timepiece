@@ -1,5 +1,6 @@
 package com.shreekaram.timepiece.presentation.clock
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Text
@@ -12,6 +13,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.shreekaram.timepiece.LocalClockStateViewModel
 import com.shreekaram.timepiece.LocalUTCTimeViewModel
 import com.shreekaram.timepiece.domain.clock.NativeTimezone
@@ -19,7 +21,11 @@ import com.shreekaram.timepiece.domain.clock.NativeTimezone
 @Composable
 fun ClockListView() {
     val timezones = LocalClockStateViewModel.current.timezones.observeAsState().value!!.toList()
-    val clockStateModel = LocalClockStateViewModel.current
+    val clockStateModel = hiltViewModel<ClockStateViewModel>()
+
+    Log.d("STATE", "clock state")
+    println(clockStateModel.homeTimezone.value)
+
     val currentTimezone = clockStateModel.currentTimezone.observeAsState().value!!
     val homeTimezone = clockStateModel.homeTimezone.observeAsState().value!!
 
@@ -31,7 +37,7 @@ fun ClockListView() {
             .fillMaxHeight(),
         verticalArrangement = Arrangement.spacedBy(24.dp),
         contentPadding = PaddingValues(bottom = 120.dp),
-        userScrollEnabled = timezones.isNotEmpty(),
+        userScrollEnabled = timezones.isNotEmpty()
     ) {
         item {
             ClockCanvas(currentTimezone)

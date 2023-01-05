@@ -38,7 +38,6 @@ val dateFormatter = DateTimeFormatter.ofPattern("E, MM/dd", Locale("en"))
 @SuppressLint("UnusedMaterialScaffoldPaddingParameter")
 @Composable
 fun ClockScreen(navController: NavHostController) {
-    val viewModel = LocalClockStateViewModel.current
     Scaffold(
         floatingActionButton = {
             FloatingActionButton(
@@ -46,15 +45,14 @@ fun ClockScreen(navController: NavHostController) {
                 onClick = {
                     navController.navigate(Route.TimezoneList.id)
                 },
-                backgroundColor = MaterialTheme.colors.primary,
+                backgroundColor = MaterialTheme.colors.primary
             ) {
                 Icon(Icons.Filled.Language, "Timezones")
             }
         },
         floatingActionButtonPosition = FabPosition.Center,
-        isFloatingActionButtonDocked = true,
+        isFloatingActionButtonDocked = true
     ) {
-
         val density = LocalDensity.current.density
         val headerHeightPx = with(LocalDensity.current) {
             maxHeight.dp.roundToPx().toFloat()
@@ -114,13 +112,14 @@ fun Header(height: Dp, progress: Float, onClick: () -> Unit) {
             .height(height)
             .background(MaterialTheme.colors.surface)
             .drawBehind {
-                if (progress < 0.75)
+                if (progress < 0.75) {
                     drawLine(
                         borderColor,
                         Offset(0F, size.height),
                         Offset(size.width, size.height),
                         1F
                     )
+                }
             }
             .padding(horizontal = 20.dp, vertical = 4.dp)
     ) {

@@ -1,7 +1,16 @@
 package com.shreekaram.timepiece
+
+import android.content.ComponentName
+import android.content.Context
+import android.content.Intent
+import android.content.ServiceConnection
+import android.os.Build
 import android.os.Bundle
+import android.os.IBinder
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,6 +26,7 @@ import com.shreekaram.timepiece.presentation.clock.ClockStateViewModel
 import com.shreekaram.timepiece.presentation.clock.TimezoneViewModel
 import com.shreekaram.timepiece.presentation.clock.UTCTimeModelView
 import com.shreekaram.timepiece.presentation.home.RootNavigationGraph
+import com.shreekaram.timepiece.service.stopwatch.StopWatchService
 import com.shreekaram.timepiece.ui.theme.TimePieceTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
@@ -34,6 +44,54 @@ val LocalClockStateViewModel = compositionLocalOf<ClockStateViewModel> {
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     private val utcViewModel: UTCTimeModelView by viewModels()
+    private lateinit var stopWatchService: StopWatchService
+    private var isBounded = false
+
+    private val connection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName, service: IBinder) {
+            val binder = service as StopWatchService.StopWatchBinder
+            stopWatchService = binder.getService()
+            isBounded = true
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            Log.d("SERVICE", "Service disconnected")
+            isBounded = false
+        }
+    }
+
+    override fun onStart() {
+        Log.d("SERVICE", "started activity")
+        Intent(this, StopWatchService::class.java).also {
+            Log.d("SERVICE", "bounded serivice")
+
+            bindService(intent, connection, Context.BIND_AUTO_CREATE)
+        }
+
+        super.onStart()
+    }
+
+    override fun onStop() {
+        if (isBounded) {
+            Log.d("SERVICE", "unbinded service")
+            unbindService(connection)
+            isBounded = false
+        }
+
+        super.onStop()
+    }
+
+    private fun requestPermissions(vararg permissions: String) {
+        val requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { result ->
+                result.entries.forEach {
+                    Log.d("MainActivity", "${it.key} = ${it.value}")
+                }
+            }
+
+        requestPermissionLauncher.launch(permissions.asList().toTypedArray())
+    }
+
     @OptIn(ExperimentalAnimationApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,7 +101,7 @@ class MainActivity : ComponentActivity() {
             TimePieceTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background,
+                    color = MaterialTheme.colors.background
                 ) {
                     val timezoneViewModel = hiltViewModel<TimezoneViewModel>()
                     val clockStateViewModel = hiltViewModel<ClockStateViewModel>()
@@ -52,7 +110,7 @@ class MainActivity : ComponentActivity() {
                         LocalTimezoneViewModel provides timezoneViewModel,
                         // FIXME: refactor to localise it
                         LocalUTCTimeViewModel provides utcViewModel,
-                        LocalClockStateViewModel provides clockStateViewModel,
+                        LocalClockStateViewModel provides clockStateViewModel
                     ) {
                         val navController = rememberAnimatedNavController()
 
@@ -61,5 +119,23 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            requestPermissions(android.Manifest.permission.POST_NOTIFICATIONS)
+        }
     }
+
+//    NOTE: this is just for documentation
+//    override fun onPause() {
+//        super.onPause()
+//        window.setFlags(
+//            WindowManager.LayoutParams.FLAG_SECURE,
+//            WindowManager.LayoutParams.FLAG_SECURE
+//        )
+//    }
+//
+//    override fun onResume() {
+//        super.onResume()
+//        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+//    }
 }

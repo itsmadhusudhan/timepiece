@@ -19,7 +19,10 @@ class ClockStateViewModel @Inject constructor(private val repository: ClockRepos
         viewModelScope.launch {
             val timezone = repository.getHomeTimezone().value
 
-            liveData.postValue(timezone)
+            if (timezone != null) {
+
+                liveData.postValue(timezone)
+            }
         }
 
         liveData
@@ -38,9 +41,15 @@ class ClockStateViewModel @Inject constructor(private val repository: ClockRepos
     }
 
     private val _currentTimezone = MutableLiveData(NativeTimezone.current())
-    private val _timezones: MutableLiveData<MutableMap<String, NativeTimezone>> = MutableLiveData(mutableMapOf())
-    private val _homeTimezone: MutableLiveData<NativeTimezone> by lazy(initializer = initialiseHomeTimezone)
-    private val _sortType: MutableLiveData<TimeZoneSort> by lazy(initializer = initialiseTimezoneSort)
+    private val _timezones: MutableLiveData<MutableMap<String, NativeTimezone>> = MutableLiveData(
+        mutableMapOf()
+    )
+    private val _homeTimezone: MutableLiveData<NativeTimezone> by lazy(
+        initializer = initialiseHomeTimezone
+    )
+    private val _sortType: MutableLiveData<TimeZoneSort> by lazy(
+        initializer = initialiseTimezoneSort
+    )
 
     val currentTimezone: LiveData<NativeTimezone> get() = _currentTimezone
     val homeTimezone: LiveData<NativeTimezone> get() = _homeTimezone

@@ -97,8 +97,8 @@ fun ClockCanvas(timezone: NativeTimezone) {
 // 		clock ticks
         drawClockTicks(
             drawContext = drawContext,
-            radius =	radius,
-            paint =	clockTickPaint,
+            radius = radius,
+            paint = clockTickPaint,
             offset = offset
         )
 
@@ -148,7 +148,7 @@ fun drawClockFace(drawContext: DrawContext, radius: Float, paint: Paint) {
     drawContext.canvas.drawCircle(
         radius = radius,
         center = Offset(0F, 0F),
-        paint = paint,
+        paint = paint
     )
 }
 
@@ -184,7 +184,7 @@ fun drawClockNumbers(
         drawContext.canvas.rotate(-angle, offset.x, offset.y)
         drawContext.canvas.nativeCanvas.drawText(
             i.toString(),
-            if (i> 9)-20F else -16F,
+            if (i > 9) -20F else -16F,
             16F,
             paint.apply {
                 if (i % 3 == 0) {

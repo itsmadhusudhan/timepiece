@@ -21,16 +21,16 @@ import com.shreekaram.timepiece.presentation.timer.TimerScreen
 fun HomeScreen(navController: NavHostController) {
     val homeNavController = rememberAnimatedNavController()
 
-    Scaffold(bottomBar = { BottomNavigationBar(controller = homeNavController) },) {
+    Scaffold(bottomBar = { BottomNavigationBar(controller = homeNavController) }) {
         AnimatedNavHost(
-            startDestination = Route.Worldclock.id,
+            startDestination = Route.StopWatch.id,
             navController = homeNavController,
             enterTransition = { EnterTransition.None },
             exitTransition = { ExitTransition.None },
             popExitTransition = { ExitTransition.None },
             popEnterTransition = { EnterTransition.None }
         ) {
-            composable(Route.Worldclock.id,) {
+            composable(Route.Worldclock.id) {
                 ClockScreen(navController = navController)
             }
 
@@ -39,7 +39,7 @@ fun HomeScreen(navController: NavHostController) {
             }
 
             composable(Route.StopWatch.id) {
-                StopWatchScreen()
+                StopWatchScreen(navController)
             }
 
             composable(Route.Timer.id) {
