@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="compose"
+        android:enabled="true"
+        android:icon="@drawable/clock_watch_icon"
+        android:shortcutShortLabel="@string/stopwatch_short_shortcut"
+        android:shortcutLongLabel="@string/stopwatch_long_shortcut"
+        >
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.shreekaram.timepiece"
+            android:targetClass="com.shreekaram.timepiece.MainActivity" />
+
+        <categories android:name="android.shortcut.conversation" />
+        <capability-binding android:key="actions.intent.CREATE_MESSAGE" />
+    </shortcut>
+</shortcuts>

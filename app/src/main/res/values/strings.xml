@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">TimePiece</string>
+    <string name="stopwatch_long_shortcut">Start stopwatch</string>
+    <string name="stopwatch_short_shortcut">Start</string>
 </resources>
