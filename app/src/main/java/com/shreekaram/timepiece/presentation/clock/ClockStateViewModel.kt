@@ -8,6 +8,7 @@ import com.shreekaram.timepiece.domain.clock.NativeTimezone
 import com.shreekaram.timepiece.domain.repository.ClockRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 
 @HiltViewModel
@@ -17,10 +18,9 @@ class ClockStateViewModel @Inject constructor(private val repository: ClockRepos
         val liveData: MutableLiveData<NativeTimezone> = MutableLiveData(NativeTimezone.current())
 
         viewModelScope.launch {
-            val timezone = repository.getHomeTimezone().value
+            val timezone = repository.getHomeTimezone().firstOrNull()
 
             if (timezone != null) {
-
                 liveData.postValue(timezone)
             }
         }
@@ -32,9 +32,9 @@ class ClockStateViewModel @Inject constructor(private val repository: ClockRepos
         val liveData: MutableLiveData<TimeZoneSort> = MutableLiveData(TimeZoneSort.TIMEZONE)
 
         viewModelScope.launch {
-            val sortType = repository.getTimezoneSort().value
-
-            liveData.postValue(sortType)
+            repository.getTimezoneSort().collect { sortType ->
+                liveData.postValue(sortType)
+            }
         }
 
         liveData
@@ -60,17 +60,21 @@ class ClockStateViewModel @Inject constructor(private val repository: ClockRepos
 
     init {
         viewModelScope.launch {
-            repository.getTimezones()
-                .observeForever { list ->
-                    _timezones.postValue(list.associateBy { it.zoneName }.toMutableMap())
-                }
+//            repository.getTimezones()
+//                .observeForever { list ->
+//                    _timezones.postValue(list.associateBy { it.zoneName }.toMutableMap())
+//                }
 
-            repository.getHomeTimezone().observeForever {
-                _homeTimezone.postValue(it)
+            repository.getTimezones().collect { list ->
+                _timezones.postValue(list.associateBy { it.zoneName }.toMutableMap())
             }
 
-            repository.getTimezoneSort().observeForever {
-                _sortType.postValue(it)
+            repository.getHomeTimezone().collect { timezone ->
+                _homeTimezone.postValue(timezone)
+            }
+
+            repository.getTimezoneSort().collect { sort ->
+                _sortType.postValue(sort)
             }
         }
     }

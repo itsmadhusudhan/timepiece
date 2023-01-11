@@ -11,32 +11,39 @@ import com.shreekaram.timepiece.domain.repository.ClockRepository
 import com.shreekaram.timepiece.presentation.clock.TimeZoneSort
 import com.shreekaram.timepiece.proto.ClockState
 import javax.inject.Inject
+import kotlinx.coroutines.flow.*
 
 class ClockRepositoryImpl @Inject constructor(
     private val dataStore: DataStore<ClockState>,
     private val timezoneDao: TimezoneEntityDao
 ) : ClockRepository {
-    private val storeLiveData = dataStore.data.asLiveData()
+    private val storeLiveData = dataStore.data
 
-    override suspend fun getTimezones(): LiveData<List<NativeTimezone>> {
-        return	Transformations.distinctUntilChanged(
-            Transformations.map(timezoneDao.getAll()) { it.map { t -> t.toDomain() } }
-        )
+    override suspend fun getTimezones(): Flow<List<NativeTimezone>> {
+        return timezoneDao.getAllTimezones().distinctUntilChanged()
+            .map { it.map { t -> t.toDomain() } }
+
+//        return Transformations.distinctUntilChanged(
+//            Transformations.map(
+//                timezoneDao.getAllTimezones().asLiveData()
+//            ) { it.map { t -> t.toDomain() } }
+//        )
     }
 
-    override suspend fun getHomeTimezone(): LiveData<NativeTimezone> {
-        return Transformations
-            .map(dataStore.data.asLiveData()) {
-                NativeTimezone.fromTimezoneModel(it.homeTimezone)
-            }
+    override suspend fun getHomeTimezone(): Flow<NativeTimezone> {
+        return dataStore.data.map {
+            NativeTimezone.fromTimezoneModel(it.homeTimezone)
+        }
     }
 
-    override suspend fun getTimezoneSort(): LiveData<TimeZoneSort> {
-        return Transformations.map(storeLiveData) {
-            when (it.sortType) {
+    override suspend fun getTimezoneSort(): Flow<TimeZoneSort> {
+        return storeLiveData.transform {
+            val value = when (it.sortType) {
                 ClockState.ClockSort.TYPE_TIMEZONE -> TimeZoneSort.TIMEZONE
                 else -> TimeZoneSort.CITY_NAME
             }
+
+            emit(value)
         }
     }
 
