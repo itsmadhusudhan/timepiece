@@ -23,12 +23,6 @@ const val CANCEL_REQUEST_CODE = 101
 const val STOP_REQUEST_CODE = 102
 const val RESUME_REQUEST_CODE = 103
 
-enum class ActionService(value: String) {
-    START("start"),
-    STOP("stop"),
-    CANCEL("cancel")
-}
-
 @Module
 @InstallIn(ServiceComponent::class)
 object NotificationModule {
@@ -44,8 +38,8 @@ object NotificationModule {
             .setSilent(false)
             .setSound(null)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .addAction(0, "Stop", ServiceHelper.stopPendingIntent(context))
-            .addAction(0, "Cancel", ServiceHelper.cancelPendingIntent(context))
+//            .addAction(0, "Stop", ServiceHelper.stopPendingIntent(context))
+//            .addAction(0, "Cancel", ServiceHelper.cancelPendingIntent(context))
             .setContentIntent(ServiceHelper.clickPendingIntent(context))
     }
 

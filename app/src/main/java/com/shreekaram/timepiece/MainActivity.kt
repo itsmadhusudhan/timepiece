@@ -16,8 +16,7 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.compositionLocalOf
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -26,10 +25,11 @@ import com.shreekaram.timepiece.presentation.clock.ClockStateViewModel
 import com.shreekaram.timepiece.presentation.clock.TimezoneViewModel
 import com.shreekaram.timepiece.presentation.clock.UTCTimeModelView
 import com.shreekaram.timepiece.presentation.home.RootNavigationGraph
+import com.shreekaram.timepiece.service.stopwatch.ServiceHelper
+import com.shreekaram.timepiece.service.stopwatch.StopWatchCommand
 import com.shreekaram.timepiece.service.stopwatch.StopWatchService
 import com.shreekaram.timepiece.ui.theme.TimePieceTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
 
 val LocalTimezoneViewModel = compositionLocalOf<TimezoneViewModel> {
     error("Timezones are not set")
@@ -45,7 +45,7 @@ val LocalClockStateViewModel = compositionLocalOf<ClockStateViewModel> {
 class MainActivity : ComponentActivity() {
     private val utcViewModel: UTCTimeModelView by viewModels()
     private lateinit var stopWatchService: StopWatchService
-    private var isBounded = false
+    private var isBounded by mutableStateOf(false)
 
     private val connection = object : ServiceConnection {
         override fun onServiceConnected(name: ComponentName, service: IBinder) {
@@ -56,6 +56,7 @@ class MainActivity : ComponentActivity() {
 
         override fun onServiceDisconnected(name: ComponentName?) {
             Log.d("SERVICE", "Service disconnected")
+
             isBounded = false
         }
     }
@@ -63,7 +64,7 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         Log.d("SERVICE", "started activity")
         Intent(this, StopWatchService::class.java).also {
-            Log.d("SERVICE", "bounded serivice")
+            Log.d("SERVICE", "bounded service")
 
             bindService(intent, connection, Context.BIND_AUTO_CREATE)
         }
@@ -79,6 +80,24 @@ class MainActivity : ComponentActivity() {
         }
 
         super.onStop()
+    }
+
+    override fun onPause() {
+        Log.d("SERVICE", "paused activity $isBounded")
+        ServiceHelper.triggerForegroundService(
+            this@MainActivity,
+            StopWatchCommand.START_NOTIFICATION
+        )
+        super.onPause()
+    }
+
+    override fun onResume() {
+        Log.d("SERVICE", "resumed activity")
+        ServiceHelper.triggerForegroundService(
+            this@MainActivity,
+            StopWatchCommand.STOP_NOTIFICATION
+        )
+        super.onResume()
     }
 
     private fun requestPermissions(vararg permissions: String) {

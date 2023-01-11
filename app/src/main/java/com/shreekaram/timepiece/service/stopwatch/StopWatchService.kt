@@ -11,7 +11,10 @@ import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.lifecycle.Observer
-import com.shreekaram.timepiece.di.*
+import com.shreekaram.timepiece.di.NOTIFICATION_CHANNEL_ID
+import com.shreekaram.timepiece.di.NOTIFICATION_CHANNEL_NAME
+import com.shreekaram.timepiece.di.NOTIFICATION_ID
+import com.shreekaram.timepiece.di.STOPWATCH_STATE
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 import javax.inject.Inject
@@ -27,6 +30,10 @@ enum class StopWatchState {
     IDLE,
     STARTED,
     PAUSED,
+}
+
+fun logger(value: String) {
+    Log.d("SERVICE", value)
 }
 
 val formatDuration: (Duration) -> String = {
@@ -58,153 +65,152 @@ class StopWatchService : Service() {
     private val scope = CoroutineScope(Dispatchers.Default + job)
     private var time = SystemClock.elapsedRealtime()
 
-    private val observer = Observer<Duration> { duration ->
+    private val durationObserver = Observer<Duration> { duration ->
         val message = formatDuration(duration)
-
         notificationManager.notify(
             NOTIFICATION_ID,
             notificationBuilder.setContentText(message).build()
         )
     }
 
-    override fun onBind(intent: Intent?): IBinder = binder
+    private val stateObserver = Observer<StopWatchState> { state ->
+        when (state) {
+            StopWatchState.IDLE -> {
+                notificationManager.cancel(NOTIFICATION_ID)
+            }
+            StopWatchState.STARTED -> {
+                updateStopButton()
+//                updateCancelButton()
+            }
+            StopWatchState.PAUSED -> {
+                updateResumeButton()
+            }
+            else -> {
+            }
+        }
+    }
+
+    inner class StopWatchBinder : Binder() {
+        fun getService(): StopWatchService = this@StopWatchService
+    }
+
+    override fun onBind(intent: Intent): IBinder {
+        return binder
+    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.getStringExtra(STOPWATCH_STATE)) {
-            ActionService.START.name -> {
-                setStopButton()
-                startForegroundService()
-                startStopWatch()
-            }
-            ActionService.STOP.name -> {
-                stopStopWatch()
-                setResumeButton()
-            }
-            ActionService.CANCEL.name -> {
-                cancelStopwatch()
-                stopForegroundService()
-            }
-        }
-
-        intent?.action.let {
-            when (it) {
-                ActionService.START.name -> {
-                    setStopButton()
-                    startForegroundService()
-                    startStopWatch()
-                }
-                ActionService.STOP.name -> {
-                    stopStopWatch()
-                    setResumeButton()
-                }
-                ActionService.CANCEL.name -> {
-                    cancelStopwatch()
-                    stopForegroundService()
-                }
-                else -> {}
-            }
-        }
+        processIntentActions(intent?.getStringExtra(STOPWATCH_STATE))
+        processCommandActions(intent?.action)
 
         return super.onStartCommand(intent, flags, startId)
     }
 
-    private fun cancelStopwatch() {
-        if (this::timer.isInitialized) {
-            timer.cancel()
-        }
-
-        stopWatchManager.updateDuration(Duration.ZERO)
-        stopWatchManager.duration.removeObserver(observer)
-        stopWatchManager.updateState(StopWatchState.IDLE)
-    }
-
-    private fun startForegroundService() {
-        createNotificationChannel()
-        startForeground(NOTIFICATION_ID, notificationBuilder.build())
-    }
-
-    @SuppressLint("RestrictedApi")
-    fun setStopButton() {
-        notificationBuilder.mActions.removeAt(0)
-
-        notificationBuilder.mActions.add(
-            0,
-            NotificationCompat.Action(0, "Stop", ServiceHelper.stopPendingIntent(this))
-        )
-
-        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
-    }
-
-    override fun onUnbind(intent: Intent?): Boolean {
-        Log.d("SERVICE", "Received unbind")
-        return super.onUnbind(intent)
-    }
-
     override fun onDestroy() {
         super.onDestroy()
+        stopWatchManager.stopWatchState.removeObserver(stateObserver)
+
         job.cancel()
     }
 
-    @SuppressLint("RestrictedApi")
-    fun setResumeButton() {
-        notificationBuilder.mActions.removeAt(0)
+    private fun processIntentActions(action: String?) {
+        when (action) {
+            StopWatchIntent.START_SERVICE.name -> {
+                startStopWatch()
 
-        notificationBuilder.mActions.add(
-            0,
-            NotificationCompat.Action(0, "Resume", ServiceHelper.resumePendingIntent(this))
-        )
+                stopWatchManager.duration.observeForever(durationObserver)
+            }
+            StopWatchIntent.PAUSE_SERVICE.name -> {
+                pauseStopWatch()
+            }
+            StopWatchIntent.CANCEL_SERVICE.name -> {
+                cancelStopWatch()
+                stopForegroundService()
+                stopSelf()
+            }
+        }
+    }
 
-        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+    private fun processCommandActions(action: String?) {
+        when (action) {
+            StopWatchCommand.START_SERVICE.name -> {
+                startStopWatch()
+            }
+            StopWatchCommand.PAUSE_SERVICE.name -> {
+                pauseStopWatch()
+            }
+            StopWatchCommand.CANCEL_SERVICE.name -> {
+                cancelStopWatch()
+                stopSelf()
+            }
+            StopWatchCommand.START_NOTIFICATION.name -> {
+                startForegroundService()
+            }
+            StopWatchCommand.STOP_NOTIFICATION.name -> {
+                stopForegroundService()
+            }
+        }
     }
 
     private fun startStopWatch() {
         stopWatchManager.updateState(StopWatchState.STARTED)
 
-        stopWatchManager.duration.observeForever(observer)
-
-        timer = Timer()
-
         scope.launch {
+            timer = Timer()
+
             time = SystemClock.elapsedRealtime()
 
             timer.schedule(
                 timerTask {
                     val sysTime = SystemClock.elapsedRealtime()
                     val elapsed = sysTime - time
+                    val duration = stopWatchManager.duration.value!!.plus(elapsed.milliseconds)
 
-                    stopWatchManager.updateDuration(
-//                        stopWatchManager.duration.value!!.plus(1.seconds)
-                        stopWatchManager.duration.value!!.plus(elapsed.milliseconds)
-                    )
+                    stopWatchManager.updateDuration(duration)
+
                     time = sysTime
                 },
                 Date(),
                 1000L
             )
         }
-
-//        timer = fixedRateTimer(initialDelay = 1000L, period = 1000L) {
-//            stopWatchManager.updateDuration(stopWatchManager.duration.value!!.plus(1.seconds))
-//            Log.d("SERVICE", stopWatchManager.duration.value!!.inWholeSeconds.toString())
-//        }
     }
 
-    private fun stopStopWatch() {
+    private fun pauseStopWatch() {
         if (this::timer.isInitialized) {
             timer.cancel()
         }
 
-        stopWatchManager.duration.removeObserver(observer)
-
+        stopWatchManager.duration.removeObserver(durationObserver)
         stopWatchManager.updateState(StopWatchState.PAUSED)
     }
 
+    private fun cancelStopWatch() {
+        if (this::timer.isInitialized) {
+            timer.cancel()
+        }
+
+        stopWatchManager.duration.removeObserver(durationObserver)
+        stopWatchManager.updateDuration(Duration.ZERO)
+        stopWatchManager.updateState(StopWatchState.IDLE)
+    }
+
+    private fun startForegroundService() {
+        if (stopWatchManager.stopWatchState.value === StopWatchState.STARTED) {
+            createNotificationChannel()
+            startForeground(NOTIFICATION_ID, notificationBuilder.build())
+            stopWatchManager.stopWatchState.observeForever(stateObserver)
+            stopWatchManager.duration.observeForever(durationObserver)
+        }
+    }
+
     private fun stopForegroundService() {
-        Log.d("SERVICE", "Stopping service")
-        notificationManager.cancel(NOTIFICATION_ID)
-        stopWatchManager.duration.removeObserver(observer)
-        stopForeground(STOP_FOREGROUND_REMOVE)
-        stopSelf()
+        if (stopWatchManager.stopWatchState.value === StopWatchState.STARTED) {
+            notificationManager.cancel(NOTIFICATION_ID)
+            stopWatchManager.stopWatchState.removeObserver(stateObserver)
+            stopWatchManager.duration.removeObserver(durationObserver)
+            stopForeground(STOP_FOREGROUND_REMOVE)
+//            stopSelf()
+        }
     }
 
     private fun createNotificationChannel() {
@@ -221,8 +227,39 @@ class StopWatchService : Service() {
         notificationManager.createNotificationChannel(channel)
     }
 
-    inner class StopWatchBinder : Binder() {
-        fun getService(): StopWatchService = this@StopWatchService
+    @SuppressLint("RestrictedApi")
+    private fun updateStopButton() {
+        if (notificationBuilder.mActions.isNotEmpty()) {
+            notificationBuilder.mActions.clear()
+        }
+
+        notificationBuilder.mActions.add(
+            0,
+            NotificationCompat.Action(0, "Lap", ServiceHelper.stopPendingIntent(this))
+        )
+        notificationBuilder.mActions.add(
+            1,
+            NotificationCompat.Action(0, "Stop", ServiceHelper.stopPendingIntent(this))
+        )
+
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
+    }
+
+    @SuppressLint("RestrictedApi")
+    private fun updateResumeButton() {
+        if (notificationBuilder.mActions.isNotEmpty()) {
+            notificationBuilder.mActions.clear()
+        }
+
+        notificationBuilder.mActions.add(
+            0,
+            NotificationCompat.Action(0, "Reset", ServiceHelper.cancelPendingIntent(this))
+        )
+        notificationBuilder.mActions.add(
+            1,
+            NotificationCompat.Action(0, "Start", ServiceHelper.resumePendingIntent(this))
+        )
+        notificationManager.notify(NOTIFICATION_ID, notificationBuilder.build())
     }
 }
 

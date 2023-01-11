@@ -21,12 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavHostController
-import com.shreekaram.timepiece.di.ActionService
 import com.shreekaram.timepiece.presentation.home.Route
 import com.shreekaram.timepiece.presentation.stopwatch.composables.ActionFabButton
 import com.shreekaram.timepiece.presentation.stopwatch.composables.LapTimeItem
 import com.shreekaram.timepiece.presentation.stopwatch.composables.StopWatchAppBar
 import com.shreekaram.timepiece.service.stopwatch.ServiceHelper
+import com.shreekaram.timepiece.service.stopwatch.StopWatchCommand
 import com.shreekaram.timepiece.service.stopwatch.StopWatchState
 
 enum class ButtonActions {
@@ -50,7 +50,6 @@ data class LapseTime(
 fun StopWatchScreen(navController: NavHostController) {
     val state = rememberLazyListState()
     val timerViewModel = hiltViewModel<StopWatchViewModel>()
-//    val isPlaying = timerViewModel.isPlaying.observeAsState().value!!
     val lapseList = timerViewModel.lapseList.observeAsState()
     val context = LocalContext.current
 
@@ -62,13 +61,15 @@ fun StopWatchScreen(navController: NavHostController) {
         when (it) {
             ButtonActions.SETTINGS_BUTTON -> navController.navigate(Route.Settings.id)
             ButtonActions.TOGGLE_PLAY -> {
-                ServiceHelper.triggerForegroundService(
-                    context,
-                    if (!isPlaying) ActionService.START.name else ActionService.STOP.name
-                )
+                val command = when (isPlaying) {
+                    true -> StopWatchCommand.PAUSE_SERVICE
+                    false -> StopWatchCommand.START_SERVICE
+                }
+
+                ServiceHelper.triggerForegroundService(context, command)
             }
             ButtonActions.RESET_BUTTON -> {
-                ServiceHelper.triggerForegroundService(context, ActionService.CANCEL.name)
+                ServiceHelper.triggerForegroundService(context, StopWatchCommand.CANCEL_SERVICE)
             }
             ButtonActions.SHARE_BUTTON -> {}
             ButtonActions.LAPSE_BUTTON -> {
